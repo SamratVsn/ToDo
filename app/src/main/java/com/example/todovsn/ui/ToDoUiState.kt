@@ -1,4 +1,7 @@
 package com.example.todovsn.ui
 
-class ToDoUiState{
-}
+import com.example.todovsn.model.ToDoItem
+
+data class TodoUiState(
+    val items: List<ToDoItem> = emptyList()
+)
