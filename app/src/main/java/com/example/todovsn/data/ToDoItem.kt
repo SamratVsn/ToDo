@@ -1,4 +1,4 @@
-package com.example.todovsn.model
+package com.example.todovsn.data
 
 data class ToDoItem(
     val id: Int,

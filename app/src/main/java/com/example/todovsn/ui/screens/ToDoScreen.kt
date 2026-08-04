@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.todovsn.R
-import com.example.todovsn.model.ToDoItem
+import com.example.todovsn.data.ToDoItem
 import com.example.todovsn.ui.ToDoViewModel
 import com.example.todovsn.ui.theme.ToDoVsnTheme
 

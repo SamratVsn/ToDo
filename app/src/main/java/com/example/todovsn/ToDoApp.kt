@@ -21,8 +21,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.todovsn.R
-import com.example.todovsn.model.ToDoItem
 import com.example.todovsn.ui.ToDoViewModel
 import com.example.todovsn.ui.screens.AddEditScreen
 import com.example.todovsn.ui.screens.SettingsScreen

@@ -1,7 +1,7 @@
 package com.example.todovsn.ui
 
 import androidx.lifecycle.ViewModel
-import com.example.todovsn.model.ToDoItem
+import com.example.todovsn.data.ToDoItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
