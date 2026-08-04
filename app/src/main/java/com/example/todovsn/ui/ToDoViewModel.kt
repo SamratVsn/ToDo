@@ -22,6 +22,14 @@ class ToDoViewModel: ViewModel() {
         }
     }
 
+    fun deleteToDo(id: Int) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                items = currentState.items.filter { it.id != id }
+            )
+        }
+    }
+
     fun checkToDo(id: Int){
         _uiState.update { currentState ->
             val updatedList = currentState.items.map { item ->

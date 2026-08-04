@@ -1,9 +1,10 @@
-package com.example.todovsn.ui
+package com.example.todovsn
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -21,13 +22,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.todovsn.R
+import com.example.todovsn.model.ToDoItem
+import com.example.todovsn.ui.ToDoViewModel
 import com.example.todovsn.ui.screens.AddEditScreen
 import com.example.todovsn.ui.screens.SettingsScreen
 import com.example.todovsn.ui.screens.ToDoScreen
 
 enum class ToDoScreens(@StringRes val title: Int){
     Home(title = R.string.app_name),
-    AddEdit(title = R.string.add_screen),
+    Add(title = R.string.add_screen),
+    Edit(title = R.string.edit_screen),
     Settings(title = R.string.settings)
 }
 
@@ -73,6 +77,20 @@ fun ToDoApp(
                 canNavigate = navController.previousBackStackEntry != null,
                 navigateUp = { navController.navigateUp() }
             )
+        },
+        floatingActionButton = {
+            if (currentScreen == ToDoScreens.Home) {
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate(ToDoScreens.Add.name)
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.add_task),
+                        contentDescription = null
+                    )
+                }
+            }
         }
     ) { innerPadding ->
         val uiState by viewModel.uiState.collectAsState()
@@ -84,15 +102,20 @@ fun ToDoApp(
         ){
             composable(route = ToDoScreens.Home.name) {
                 ToDoScreen(
-                    onNewClick = { navController.navigate(ToDoScreens.AddEdit.name) },
+                    toDoItems = uiState.items,
+                    onEditClicked = { navController.navigate(ToDoScreens.Edit.name) },
+                    viewModel = viewModel,
                     modifier = Modifier.fillMaxSize()
                 )
             }
-            composable(route = ToDoScreens.AddEdit.name) {
+            composable(route = ToDoScreens.Add.name) {
                 AddEditScreen(
                     onBackPressed = { navController.navigate(ToDoScreens.Home.name) },
                     modifier = Modifier.fillMaxSize()
                 )
+            }
+            composable(route = ToDoScreens.Edit.name){
+
             }
             composable(route = ToDoScreens.Settings.name) {
                 SettingsScreen(

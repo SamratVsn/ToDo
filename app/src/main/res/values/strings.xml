@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">To-Do Vsn</string>
     <string name="add_screen">Add Task</string>
+    <string name="edit_screen">Edit Task</string>
     <string name="settings">ToDo Settings</string>
     <string name="arrow_back">Arrow Back</string>
 </resources>
