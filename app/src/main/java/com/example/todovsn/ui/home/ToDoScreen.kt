@@ -1,4 +1,4 @@
-package com.example.todovsn.ui.screens
+package com.example.todovsn.ui.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,7 +32,13 @@ import androidx.compose.ui.unit.dp
 import com.example.todovsn.R
 import com.example.todovsn.data.ToDoItem
 import com.example.todovsn.ui.ToDoViewModel
+import com.example.todovsn.ui.navigation.NavDestination
 import com.example.todovsn.ui.theme.ToDoVsnTheme
+
+object HomeDestination : NavDestination {
+    override val route = "home"
+    override val titleRes = R.string.app_name
+}
 
 @Composable
 fun ToDoScreen(

@@ -4,4 +4,5 @@
     <string name="edit_screen">Edit Task</string>
     <string name="settings">ToDo Settings</string>
     <string name="arrow_back">Arrow Back</string>
+    <string name="details">Task Detail</string>
 </resources>
