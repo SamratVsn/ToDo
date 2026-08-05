@@ -25,6 +25,7 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,7 +39,7 @@ fun ToDoApp(
 }
 
 @Composable
-private fun ToDoAppBar(
+fun ToDoAppBar(
     title: String,
     canNavigateBack: Boolean,
     modifier: Modifier = Modifier,
@@ -64,7 +65,7 @@ private fun ToDoAppBar(
             IconButton(onClick = onSettingsClick) {
                 Icon(
                     painter = painterResource(R.drawable.settings),
-                    contentDescription = "Settings"
+                    contentDescription = stringResource(R.string.settings)
                 )
             }
         },

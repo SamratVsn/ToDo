@@ -5,4 +5,6 @@
     <string name="settings">ToDo Settings</string>
     <string name="arrow_back">Arrow Back</string>
     <string name="details">Task Detail</string>
+    <string name="no_task">Create your first task to get started.</string>
+    <string name="no_new_yet">No tasks yet</string>
 </resources>

@@ -10,6 +10,6 @@ object ToDoDetailsDestination : NavDestination {
 }
 
 @Composable
-fun ToDoDetails(){
+fun ToDoDetailsScreen(){
 
 }
