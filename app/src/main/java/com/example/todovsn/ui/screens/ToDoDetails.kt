@@ -7,6 +7,8 @@ import com.example.todovsn.ui.navigation.NavDestination
 object ToDoDetailsDestination : NavDestination {
     override val route = "details"
     override val titleRes = R.string.details
+    const val toDoIdArg = "toDoId"
+    val routeWithArgs = "$route/{$toDoIdArg}"
 }
 
 @Composable
