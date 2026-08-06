@@ -34,7 +34,7 @@ fun ToDoNavHost(
                     navController.navigate(AddToDoDestination.route)
                 },
                 navigateToTaskUpdate = {
-                    navController.navigate("${ToDoEditDestination.route}/${it}")
+                    navController.navigate("${ToDoDetailsDestination.route}/${it}")
                 },
                 onInfoClick = {
                     navController.navigate(InfoDestination.route)

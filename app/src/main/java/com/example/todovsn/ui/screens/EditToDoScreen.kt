@@ -55,6 +55,7 @@ fun ToDoEditScreen(
                     navigateBack()
                 }
             },
+            mode = TaskScreenMode.EDIT,
             modifier = Modifier
                 .padding(
                     start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),

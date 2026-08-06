@@ -2,15 +2,23 @@ package com.example.todovsn.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -18,9 +26,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
@@ -34,9 +46,15 @@ object AddToDoDestination : NavDestination {
     override val titleRes = R.string.add_screen
 }
 
+enum class TaskScreenMode {
+    ADD,
+    EDIT
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddToDoScreen(
+    mode: TaskScreenMode = TaskScreenMode.ADD,
     navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     canNavigateBack: Boolean = true,
@@ -61,12 +79,9 @@ fun AddToDoScreen(
                         navigateBack()
                     }
                 },
+                mode = mode,
                 modifier = Modifier
-                    .padding(
-                        start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
-                        end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
-                        top = innerPadding.calculateTopPadding()
-                    )
+                    .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
                     .fillMaxWidth()
             )
@@ -78,24 +93,59 @@ fun AddToDoBody(
     toDoUiState: ToDoUiState,
     onToDoValueChange: (ToDoDetails) -> Unit,
     onSaveClick: () -> Unit,
-    modifier: Modifier = Modifier
-){
+    modifier: Modifier = Modifier,
+    mode: TaskScreenMode,
+) {
     Column(
-        modifier = modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        modifier = modifier
+            .padding(horizontal = 20.dp, vertical = 24.dp)
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        // Header
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = when (mode) {
+                    TaskScreenMode.ADD -> "New Task"
+                    TaskScreenMode.EDIT -> "Edit Task"
+                }
+            )
+            Text(
+                text = "Add/Edit the details for your task below",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
         ToDoInputForm(
             toDoDetails = toDoUiState.toDoDetails,
             onValueChange = onToDoValueChange,
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
         Button(
             onClick = onSaveClick,
-            enabled =toDoUiState.isEntryValid,
-            shape = MaterialTheme.shapes.small,
-            modifier = Modifier.fillMaxWidth()
+            enabled = toDoUiState.isEntryValid,
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(52.dp)
         ) {
-            Text(text = stringResource(R.string.save_action))
+            Icon(
+                painter = painterResource(R.drawable.add_task),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = when (mode) {
+                    TaskScreenMode.ADD -> "Add Task"
+                    TaskScreenMode.EDIT -> "Save Changes"
+                },
+                style = MaterialTheme.typography.titleSmall
+            )
         }
     }
 }
@@ -107,50 +157,112 @@ private fun ToDoInputForm(
     onValueChange: (ToDoDetails) -> Unit = {},
     enabled: Boolean = true
 ) {
+    val titleMax = 60
+    val descMax = 250
+
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        focusedLabelColor = MaterialTheme.colorScheme.primary,
+        cursorColor = MaterialTheme.colorScheme.primary
+    )
+
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        OutlinedTextField(
-            value = toDoDetails.title,
-            onValueChange = {
-                onValueChange(toDoDetails.copy(title = it))
-            },
-            label = { Text("ToDo Title*") },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = enabled,
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer
+        Column {
+            OutlinedTextField(
+                value = toDoDetails.title,
+                onValueChange = {
+                    if (it.length <= titleMax) onValueChange(toDoDetails.copy(title = it))
+                },
+                label = { Text("Title") },
+                placeholder = { Text("e.g. Finish project report") },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.edit_task),
+                        contentDescription = null
+                    )
+                },
+                trailingIcon = {
+                    if (toDoDetails.title.isNotEmpty()) {
+                        IconButton(onClick = { onValueChange(toDoDetails.copy(title = "")) }) {
+                            Icon(
+                                painter = painterResource(R.drawable.delete_icon),
+                                contentDescription = "Clear title"
+                            )
+                        }
+                    }
+                },
+                supportingText = {
+                    Text(
+                        text = "${toDoDetails.title.length}/$titleMax",
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End
+                    )
+                },
+                singleLine = true,
+                enabled = enabled,
+                isError = toDoDetails.title.isBlank(),
+                shape = RoundedCornerShape(14.dp),
+                colors = fieldColors,
+                modifier = Modifier.fillMaxWidth()
             )
-        )
+        }
 
+        // Description field
         OutlinedTextField(
             value = toDoDetails.description,
             onValueChange = {
-                onValueChange(toDoDetails.copy(description = it))
+                if (it.length <= descMax) onValueChange(toDoDetails.copy(description = it))
             },
-            label = { Text("ToDo Description") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 120.dp),
+            label = { Text("Description") },
+            placeholder = { Text("Add notes or details (optional)") },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.notes),
+                    contentDescription = null,
+                    modifier = Modifier.padding(bottom = 60.dp) // aligns icon to top
+                )
+            },
+            supportingText = {
+                Text(
+                    text = "${toDoDetails.description.length}/$descMax",
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End
+                )
+            },
             enabled = enabled,
-            maxLines = 5,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
-                disabledContainerColor = MaterialTheme.colorScheme.secondaryContainer
-            )
+            minLines = 4,
+            maxLines = 6,
+            shape = RoundedCornerShape(14.dp),
+            colors = fieldColors,
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (enabled) {
-            Text(
-                text = "* Required field",
-                modifier = Modifier.padding(start = 16.dp),
-                style = MaterialTheme.typography.bodySmall
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Icon(
+                    painterResource(R.drawable.info),
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "Title is required",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
