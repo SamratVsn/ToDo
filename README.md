@@ -8,7 +8,7 @@ To-Do Vsn is a lightweight, modern task management application built with Jetpac
 
 | Home | Add Task | Edit Task | Details | About | Tasks Screen |
 |------|----------|-----------|---------|-------|
-| ![](Empty.png) | ![](screenshots/add.png) | ![](Edit.png) | ![](Details.png) | ![](Info.png) |  ![](Home.png) |
+| ![](Empty.png) | ![](Add.png) | ![](Edit.png) | ![](Details.png) | ![](Info.png) |  ![](Home.png) |
 
 ---
 
