@@ -44,8 +44,9 @@ fun ToDoAppBar(
     canNavigateBack: Boolean,
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
-    onSettingsClick : () -> Unit = { },
-    navigateUp: () -> Unit = {}
+    onInfoClick: () -> Unit = { },
+    navigateUp: () -> Unit = {},
+    showInfoButton: Boolean = false,
 ){
     val colorScheme = MaterialTheme.colorScheme
 
@@ -62,11 +63,13 @@ fun ToDoAppBar(
             )
         },
         actions = {
-            IconButton(onClick = onSettingsClick) {
-                Icon(
-                    painter = painterResource(R.drawable.settings),
-                    contentDescription = stringResource(R.string.settings)
-                )
+            if (showInfoButton) {
+                IconButton(onClick = onInfoClick) {
+                    Icon(
+                        painter = painterResource(R.drawable.info),
+                        contentDescription = stringResource(R.string.info)
+                    )
+                }
             }
         },
         modifier = modifier,

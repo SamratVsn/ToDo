@@ -48,7 +48,7 @@ fun AddToDoScreen(
             ToDoAppBar(
                 title = stringResource(AddToDoDestination.titleRes),
                 canNavigateBack = canNavigateBack,
-                navigateUp = onNavigateUp
+                navigateUp = onNavigateUp,
             )
         }
     ){ innerPadding ->
@@ -74,7 +74,7 @@ fun AddToDoScreen(
 }
 
 @Composable
-private fun AddToDoBody(
+fun AddToDoBody(
     toDoUiState: ToDoUiState,
     onToDoValueChange: (ToDoDetails) -> Unit,
     onSaveClick: () -> Unit,

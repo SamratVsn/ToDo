@@ -2,10 +2,17 @@
     <string name="app_name">To-Do Vsn</string>
     <string name="add_screen">Add Task</string>
     <string name="edit_screen">Edit Task</string>
-    <string name="settings">ToDo Settings</string>
+    <string name="info">ToDo App Info</string>
     <string name="arrow_back">Arrow Back</string>
     <string name="details">Task Detail</string>
     <string name="no_task">Create your first task to get started.</string>
     <string name="no_new_yet">No tasks yet</string>
     <string name="save_action">Save</string>
+    <string name="attention">Attention</string>
+    <string name="back_button">Back</string>
+    <string name="delete">Delete</string>
+    <string name="delete_question">Are you sure you want to delete?</string>
+    <string name="mark_incomplete">Task is Incomplete</string>
+    <string name="mark_complete">Task is Completed</string>
+    <string name="edit_task">Edit ToDo</string>
 </resources>

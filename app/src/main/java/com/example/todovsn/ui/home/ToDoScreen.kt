@@ -1,7 +1,6 @@
 package com.example.todovsn.ui.home
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -36,7 +35,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
@@ -44,7 +42,6 @@ import com.example.todovsn.ToDoAppBar
 import com.example.todovsn.data.ToDoItem
 import com.example.todovsn.ui.AppViewModelProvider
 import com.example.todovsn.ui.navigation.NavDestination
-import com.example.todovsn.ui.theme.ToDoVsnTheme
 
 object HomeDestination : NavDestination {
     override val route = "home"
@@ -54,10 +51,9 @@ object HomeDestination : NavDestination {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToDoScreen(
-    onCheckedChange: (Int, Boolean) -> Unit,
-    onDelete: (Int) -> Unit,
     navigateToTaskEntry: () -> Unit,
     navigateToTaskUpdate: (Int) -> Unit,
+    onInfoClick : () -> Unit = { },
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
@@ -70,7 +66,9 @@ fun ToDoScreen(
             ToDoAppBar(
                 title = stringResource(HomeDestination.titleRes),
                 canNavigateBack = false,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                onInfoClick = onInfoClick,
+                showInfoButton = true,
             )
         },
         floatingActionButton = {
@@ -80,7 +78,7 @@ fun ToDoScreen(
                 modifier = Modifier.padding(20.dp)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.add_task),
+                    painter = painterResource(R.drawable.add_circle),
                     contentDescription = stringResource(R.string.add_screen),
                 )
             }
@@ -89,9 +87,9 @@ fun ToDoScreen(
         HomeBody(
             toDoList = homeUiState.toDoList,
             onToDoClick = navigateToTaskUpdate,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = viewModel::toggleCompleted,
+            onDelete = viewModel::deleteToDo,
             modifier = modifier.fillMaxSize(),
-            onDelete = onDelete,
             contentPadding = innerPadding
         )
     }
@@ -101,8 +99,8 @@ fun ToDoScreen(
 private fun HomeBody(
     toDoList: List<ToDoItem>,
     onToDoClick: (Int) -> Unit,
-    onCheckedChange: (Int, Boolean) -> Unit,
-    onDelete: (Int) -> Unit,
+    onCheckedChange: (ToDoItem) -> Unit,
+    onDelete: (ToDoItem) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ){
@@ -163,8 +161,8 @@ private fun EmptyScreen(
 private fun ToDoList(
     toDoList: List<ToDoItem>,
     onToDoClick: (ToDoItem) -> Unit,
-    onCheckedChange: (Int, Boolean) -> Unit,
-    onDelete: (Int) -> Unit,
+    onCheckedChange: (ToDoItem) -> Unit,
+    onDelete: (ToDoItem) -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ){
@@ -185,8 +183,8 @@ private fun ToDoList(
 }
 @Composable
 private fun ToDoCard(
-    onCheckedChange: (Int, Boolean) -> Unit,
-    onDelete: (Int) -> Unit,
+    onCheckedChange: (ToDoItem) -> Unit,
+    onDelete: (ToDoItem) -> Unit,
     toDo: ToDoItem,
     modifier: Modifier = Modifier
 ){
@@ -204,7 +202,7 @@ private fun ToDoCard(
             Checkbox(
                 checked = toDo.isCompleted,
                 onCheckedChange = {
-                    onCheckedChange(toDo.id, it)
+                    onCheckedChange(toDo)
                 },
                 colors = CheckboxDefaults.colors(
                     checkedColor = MaterialTheme.colorScheme.primary
@@ -231,8 +229,8 @@ private fun ToDoCard(
 
             IconButton(
                 onClick = {
-                    onDelete(toDo.id)
-                },
+                    onDelete(toDo)
+                }
             ) {
                 Icon(
                     painter = painterResource(R.drawable.delete_icon),
