@@ -27,7 +27,7 @@ class AddViewModel(private val toDoRepository: ToDoRepository) : ViewModel() {
 
     private fun validateInput(uiState: ToDoDetails = toDoUiState.toDoDetails) : Boolean {
         return with(uiState) {
-            title.isNotBlank() && description.isNotBlank() && title.trim().length >= 3 && description.length <= 500
+            title.isNotBlank() && title.trim().length >= 3
         }
     }
 }
@@ -48,6 +48,7 @@ fun ToDoDetails.toToDo(): ToDoItem = ToDoItem(
     id = id,
     title = title,
     description = description,
+    isCompleted = isCompleted
 )
 
 fun ToDoItem.toToDoUiState(isEntryValid: Boolean = false) : ToDoUiState = ToDoUiState(
@@ -58,5 +59,6 @@ fun ToDoItem.toToDoUiState(isEntryValid: Boolean = false) : ToDoUiState = ToDoUi
 fun ToDoItem.toToDoDetails() : ToDoDetails = ToDoDetails(
     id = id,
     title = title,
-    description = description
+    description = description,
+    isCompleted = isCompleted
 )

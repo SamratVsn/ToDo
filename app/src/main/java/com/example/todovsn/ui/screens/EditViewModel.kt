@@ -42,7 +42,7 @@ class EditViewModel(
 
     private fun validateInput(uiState: ToDoDetails = toDoUiState.toDoDetails) : Boolean {
             return with(uiState){
-                title.isNotBlank() && description.isNotBlank() && title.trim().length >= 3 && description.length <= 500
+                title.isNotBlank() && title.trim().length >= 3
             }
     }
 }

@@ -188,6 +188,7 @@ private fun ToDoInputForm(
                         contentDescription = null
                     )
                 },
+
                 trailingIcon = {
                     if (toDoDetails.title.isNotEmpty()) {
                         IconButton(onClick = { onValueChange(toDoDetails.copy(title = "")) }) {
@@ -199,16 +200,27 @@ private fun ToDoInputForm(
                     }
                 },
                 supportingText = {
-                    Text(
-                        text = "${toDoDetails.title.length}/$titleMax",
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.End
-                    )
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        if (toDoDetails.title.isNotEmpty() && toDoDetails.title.trim().length < 3) {
+                            Text(
+                                text = "Min 3 characters",
+                                color = MaterialTheme.colorScheme.error,
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                        Text(
+                            text = "${toDoDetails.title.length}/$titleMax",
+                            style = MaterialTheme.typography.labelSmall,
+                            textAlign = TextAlign.End
+                        )
+                    }
                 },
                 singleLine = true,
                 enabled = enabled,
-                isError = toDoDetails.title.isBlank(),
+                isError = toDoDetails.title.isNotEmpty() && toDoDetails.title.trim().length < 3,
                 shape = RoundedCornerShape(14.dp),
                 colors = fieldColors,
                 modifier = Modifier.fillMaxWidth()
@@ -258,7 +270,7 @@ private fun ToDoInputForm(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "Title is required",
+                    text = "Title is required (min 3 characters)",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

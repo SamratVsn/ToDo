@@ -241,7 +241,7 @@ private fun AboutAppSection() {
         )
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "Version 1.0.0",
+            text = "Version 1.2.0",
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = AccentColor
@@ -257,7 +257,8 @@ private fun BuiltWithSection() {
             "Jetpack Compose",
             "Room Database",
             "MVVM",
-            "Material 3"
+            "Material 3",
+            "Navigation Compose"
         )
         techStack.forEach { tech ->
             Row(

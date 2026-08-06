@@ -139,7 +139,6 @@ private fun ToDoDetailsBody(
             toDo = toDo,
             modifier = Modifier.fillMaxWidth()
         )
-
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Button(
                 onClick = onToggleCompleted,
@@ -148,27 +147,27 @@ private fun ToDoDetailsBody(
                     .height(52.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = if (toDo.isCompleted)
+                    ButtonDefaults.buttonColors()
+                else
                     ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                else
-                    ButtonDefaults.buttonColors()
+            )
             ) {
                 Icon(
                     painter = if (toDo.isCompleted)
-                        painterResource(R.drawable.restart_alt)
+                        painterResource(R.drawable.check_circle)
                     else
-                        painterResource(R.drawable.check_circle),
+                        painterResource(R.drawable.restart_alt),
                     contentDescription = null,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = if (toDo.isCompleted)
-                        stringResource(R.string.mark_incomplete)
+                        stringResource(R.string.mark_complete)
                     else
-                        stringResource(R.string.mark_complete),
+                        stringResource(R.string.mark_incomplete),
                     style = MaterialTheme.typography.titleSmall
                 )
             }
