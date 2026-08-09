@@ -19,6 +19,7 @@ foundationLayout = "1.11.4"
 uiGraphics = "1.11.4"
 uiText = "1.11.4"
 foundation = "1.11.4"
+core-splashscreen = "1.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +46,7 @@ androidx-compose-foundation-layout = { group = "androidx.compose.foundation", na
 androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
 androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
