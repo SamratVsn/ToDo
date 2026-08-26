@@ -2,6 +2,7 @@ package com.example.todovsn.data
 
 import androidx.room3.Entity
 import androidx.room3.PrimaryKey
+import java.time.LocalDate
 
 @Entity(tableName = "Tasks")
 data class ToDoItem(
@@ -9,5 +10,6 @@ data class ToDoItem(
     val id: Int = 0,
     val title: String,
     val description: String,
+    val dueDate: LocalDate? = null,
     val isCompleted: Boolean = false
 )
