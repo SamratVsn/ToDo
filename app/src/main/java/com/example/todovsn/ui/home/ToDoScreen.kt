@@ -245,7 +245,7 @@ private fun ToDoCard(
                     tint = MaterialTheme.colorScheme.error
                 )
             },
-            title = { Text("Delete task?") },
+            title = { Text("Delete Task?") },
             text = { Text("\"${toDo.title}\" will be permanently removed.") },
             confirmButton = {
                 TextButton(
@@ -337,24 +337,7 @@ private fun ToDoCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    if (toDo.description.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = toDo.description,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
                 }
-
-                Icon(
-                    painter = painterResource(R.drawable.undo),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.size(20.dp)
-                )
             }
         }
     }

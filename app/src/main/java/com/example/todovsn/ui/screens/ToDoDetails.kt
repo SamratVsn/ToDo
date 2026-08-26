@@ -139,40 +139,7 @@ private fun ToDoDetailsBody(
             toDo = toDo,
             modifier = Modifier.fillMaxWidth()
         )
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Button(
-                onClick = onToggleCompleted,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = if (toDo.isCompleted)
-                    ButtonDefaults.buttonColors()
-                else
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            ) {
-                Icon(
-                    painter = if (toDo.isCompleted)
-                        painterResource(R.drawable.check_circle)
-                    else
-                        painterResource(R.drawable.restart_alt),
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (toDo.isCompleted)
-                        stringResource(R.string.mark_complete)
-                    else
-                        stringResource(R.string.mark_incomplete),
-                    style = MaterialTheme.typography.titleSmall
-                )
-            }
-
-            OutlinedButton(
+        OutlinedButton(
                 onClick = { deleteConfirmationRequired = true },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -182,18 +149,17 @@ private fun ToDoDetailsBody(
                     contentColor = MaterialTheme.colorScheme.error
                 ),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f))
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.delete_icon),
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.delete_icon),
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = stringResource(R.string.delete),
                     style = MaterialTheme.typography.titleSmall
                 )
-            }
         }
 
         if (deleteConfirmationRequired) {
@@ -264,8 +230,6 @@ fun ToDoDetails(
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Status chip
-            StatusChip(isCompleted = toDo.isCompleted)
 
             // Title
             Text(
@@ -313,47 +277,5 @@ fun ToDoDetails(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun StatusChip(
-    isCompleted: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val containerColor = if (isCompleted)
-        MaterialTheme.colorScheme.primaryContainer
-    else
-        MaterialTheme.colorScheme.tertiaryContainer
-
-    val contentColor = if (isCompleted)
-        MaterialTheme.colorScheme.onPrimaryContainer
-    else
-        MaterialTheme.colorScheme.onTertiaryContainer
-
-    Row(
-        modifier = modifier
-            .clip(RoundedCornerShape(50))
-            .background(containerColor)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-        Icon(
-            painter = if (isCompleted){
-                painterResource(R.drawable.check_circle)
-            } else {
-                painterResource(R.drawable.schedule)
-            },
-            contentDescription = null,
-            modifier = Modifier.size(14.dp),
-            tint = contentColor
-        )
-        Text(
-            text = if (isCompleted) "Completed" else "Pending",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Medium,
-            color = contentColor
-        )
     }
 }
