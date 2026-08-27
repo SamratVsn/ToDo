@@ -1,7 +1,8 @@
 package com.example.todovsn.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,16 +18,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,14 +40,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
 import com.example.todovsn.ToDoAppBar
@@ -54,6 +55,8 @@ import com.example.todovsn.data.ToDoItem
 import com.example.todovsn.ui.AppViewModelProvider
 import com.example.todovsn.ui.navigation.NavDestination
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 object ToDoDetailsDestination : NavDestination {
     override val route = "details"
@@ -62,6 +65,7 @@ object ToDoDetailsDestination : NavDestination {
     val routeWithArgs = "$route/{$toDoIdArg}"
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToDoDetailsScreen(
@@ -70,7 +74,7 @@ fun ToDoDetailsScreen(
     modifier: Modifier = Modifier,
     viewModel: DetailsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val uiState = viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -79,25 +83,13 @@ fun ToDoDetailsScreen(
                 title = stringResource(ToDoDetailsDestination.titleRes),
                 canNavigateBack = true,
                 navigateUp = navigateBack,
+                onEditClick = { navigateToEditToDo(uiState.toDoDetails.id) }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navigateToEditToDo(uiState.value.toDoDetails.id)
-                },
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.edit_task),
-                    contentDescription = stringResource(R.string.edit_task)
-                )
-            }
         },
         modifier = modifier
     ) { innerPadding ->
         ToDoDetailsBody(
-            toDoDetailsUiState = uiState.value,
+            toDoDetailsUiState = uiState,
             onToggleCompleted = { viewModel.toggleCompleted() },
             onDelete = {
                 coroutineScope.launch {
@@ -116,6 +108,7 @@ fun ToDoDetailsScreen(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun ToDoDetailsBody(
     toDoDetailsUiState: ToDoDetailsUiState,
@@ -131,35 +124,60 @@ private fun ToDoDetailsBody(
 
     Column(
         modifier = modifier
-            .padding(horizontal = 20.dp, vertical = 24.dp)
+            .padding(16.dp)
             .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ToDoDetails(
+        ToDoDetailsCard(
             toDo = toDo,
             modifier = Modifier.fillMaxWidth()
         )
-        OutlinedButton(
-                onClick = { deleteConfirmationRequired = true },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = MaterialTheme.colorScheme.error
-                ),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f))
+
+        Button(
+            onClick = onToggleCompleted,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = if (toDo.isCompleted) {
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+            } else {
+                ButtonDefaults.buttonColors()
+            }
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.check_circle),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = if (toDo.isCompleted) "Completed" else "Mark as done",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        TextButton(
+            onClick = { deleteConfirmationRequired = true },
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = MaterialTheme.colorScheme.error
+            )
         ) {
             Icon(
                 painter = painterResource(R.drawable.delete_icon),
                 contentDescription = null,
                 modifier = Modifier.size(18.dp)
             )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.delete),
-                    style = MaterialTheme.typography.titleSmall
-                )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Delete task",
+                style = MaterialTheme.typography.labelLarge
+            )
         }
 
         if (deleteConfirmationRequired) {
@@ -212,30 +230,48 @@ private fun DeleteConfirmationDialog(
     )
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ToDoDetails(
+fun ToDoDetailsCard(
     toDo: ToDoItem,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Category Chip
+            AssistChip(
+                onClick = { },
+                label = { 
+                    Text(
+                        text = toDo.category,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
+                    ) 
+                },
+                colors = AssistChipDefaults.assistChipColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                    labelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
+                border = null,
+                shape = RoundedCornerShape(8.dp)
+            )
 
             // Title
             Text(
                 text = toDo.title,
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Bold,
                 textDecoration = if (toDo.isCompleted)
                     TextDecoration.LineThrough
                 else
@@ -246,36 +282,64 @@ fun ToDoDetails(
                     MaterialTheme.colorScheme.onSurface
             )
 
+            // Due Date & Time
+            if (toDo.dueDate != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.schedule),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    val dateDisplay = when (toDo.dueDate) {
+                        LocalDate.now() -> "Today"
+                        LocalDate.now().plusDays(1) -> "Tomorrow"
+                        else -> toDo.dueDate.format(DateTimeFormatter.ofPattern("E, MMM d"))
+                    }
+                    val timeDisplay = toDo.dueTime?.format(DateTimeFormatter.ofPattern("h:mm a")) ?: ""
+                    
+                    Text(
+                        text = "$dateDisplay ${if (timeDisplay.isNotEmpty()) "· $timeDisplay" else ""}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
             // Description section
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Icon(
-                        painterResource(R.drawable.notes),
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = "Description",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = "Description",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = toDo.description.ifBlank { "No description added" },
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyLarge,
                     color = if (toDo.description.isBlank())
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     else
                         MaterialTheme.colorScheme.onSurface,
-                    fontStyle = if (toDo.description.isBlank()) FontStyle.Italic else FontStyle.Normal
+                    lineHeight = 24.sp
                 )
             }
+
+            // Created At
+            Text(
+                text = "Created ${toDo.createdAt.format(DateTimeFormatter.ofPattern("MMM d · h:mm a"))}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start
+            )
         }
     }
 }

@@ -4,10 +4,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.todovsn.data.ToDoRepository
 import com.example.todovsn.data.ToDoItem
-import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 class AddViewModel(private val toDoRepository: ToDoRepository) : ViewModel() {
     var toDoUiState by mutableStateOf(ToDoUiState())
@@ -41,6 +42,10 @@ data class ToDoDetails(
     val id: Int = 0,
     val title: String = "",
     val description: String = "",
+    val category: String = "Extra",
+    val dueDate: LocalDate? = null,
+    val dueTime: LocalTime? = null,
+    val createdAt: LocalDateTime = LocalDateTime.now(),
     val isCompleted: Boolean = false,
 )
 
@@ -48,6 +53,10 @@ fun ToDoDetails.toToDo(): ToDoItem = ToDoItem(
     id = id,
     title = title,
     description = description,
+    category = category,
+    dueDate = dueDate,
+    dueTime = dueTime,
+    createdAt = createdAt,
     isCompleted = isCompleted
 )
 
@@ -60,5 +69,9 @@ fun ToDoItem.toToDoDetails() : ToDoDetails = ToDoDetails(
     id = id,
     title = title,
     description = description,
+    category = category,
+    dueDate = dueDate,
+    dueTime = dueTime,
+    createdAt = createdAt,
     isCompleted = isCompleted
 )

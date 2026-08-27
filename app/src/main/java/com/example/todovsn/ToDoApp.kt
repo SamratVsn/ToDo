@@ -45,6 +45,7 @@ fun ToDoAppBar(
     modifier: Modifier = Modifier,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     onInfoClick: () -> Unit = { },
+    onEditClick: (() -> Unit)? = null,
     navigateUp: () -> Unit = {},
     showInfoButton: Boolean = false,
 ){
@@ -68,6 +69,14 @@ fun ToDoAppBar(
                     Icon(
                         painter = painterResource(R.drawable.info),
                         contentDescription = stringResource(R.string.info)
+                    )
+                }
+            }
+            if (onEditClick != null) {
+                IconButton(onClick = onEditClick) {
+                    Icon(
+                        painter = painterResource(R.drawable.edit_task),
+                        contentDescription = stringResource(R.string.edit_task)
                     )
                 }
             }

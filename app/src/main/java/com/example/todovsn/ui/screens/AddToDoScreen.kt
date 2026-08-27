@@ -1,14 +1,16 @@
 package com.example.todovsn.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -16,23 +18,34 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
@@ -40,6 +53,11 @@ import com.example.todovsn.ToDoAppBar
 import com.example.todovsn.ui.AppViewModelProvider
 import com.example.todovsn.ui.navigation.NavDestination
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 object AddToDoDestination : NavDestination {
     override val route = "item_entry"
@@ -51,6 +69,7 @@ enum class TaskScreenMode {
     EDIT
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddToDoScreen(
@@ -69,25 +88,26 @@ fun AddToDoScreen(
                 navigateUp = onNavigateUp,
             )
         }
-    ){ innerPadding ->
-            AddToDoBody(
-                toDoUiState = viewModel.toDoUiState,
-                onToDoValueChange = viewModel::updateUiState,
-                onSaveClick = {
-                    coroutineScope.launch {
-                        viewModel.saveToDo()
-                        navigateBack()
-                    }
-                },
-                mode = mode,
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .fillMaxWidth()
-            )
+    ) { innerPadding ->
+        AddToDoBody(
+            toDoUiState = viewModel.toDoUiState,
+            onToDoValueChange = viewModel::updateUiState,
+            onSaveClick = {
+                coroutineScope.launch {
+                    viewModel.saveToDo()
+                    navigateBack()
+                }
+            },
+            mode = mode,
+            modifier = Modifier
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+        )
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddToDoBody(
     toDoUiState: ToDoUiState,
@@ -98,24 +118,19 @@ fun AddToDoBody(
 ) {
     Column(
         modifier = modifier
-            .padding(horizontal = 20.dp, vertical = 24.dp)
+            .padding(horizontal = 24.dp, vertical = 24.dp)
             .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         // Header
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = when (mode) {
-                    TaskScreenMode.ADD -> "New Task"
-                    TaskScreenMode.EDIT -> "Edit Task"
-                }
-            )
-            Text(
-                text = "Add/Edit the details for your task below",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        Text(
+            text = when (mode) {
+                TaskScreenMode.ADD -> "New Task"
+                TaskScreenMode.EDIT -> "Edit Task"
+            },
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold
+        )
 
         ToDoInputForm(
             toDoDetails = toDoUiState.toDoDetails,
@@ -123,33 +138,30 @@ fun AddToDoBody(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = onSaveClick,
             enabled = toDoUiState.isEntryValid,
-            shape = MaterialTheme.shapes.medium,
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp)
+                .height(56.dp)
         ) {
-            Icon(
-                painter = painterResource(R.drawable.add_task),
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = when (mode) {
                     TaskScreenMode.ADD -> "Add Task"
                     TaskScreenMode.EDIT -> "Save Changes"
                 },
-                style = MaterialTheme.typography.titleSmall
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
             )
         }
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ToDoInputForm(
     toDoDetails: ToDoDetails,
@@ -158,122 +170,280 @@ private fun ToDoInputForm(
     enabled: Boolean = true
 ) {
     val titleMax = 60
-    val descMax = 250
+    val descMax = 500
 
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = MaterialTheme.colorScheme.primary,
-        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-        focusedContainerColor = MaterialTheme.colorScheme.surface,
-        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-        focusedLabelColor = MaterialTheme.colorScheme.primary,
-        cursorColor = MaterialTheme.colorScheme.primary
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    val datePickerState = rememberDatePickerState()
+    val timePickerState = rememberTimePickerState(
+        initialHour = toDoDetails.dueTime?.hour ?: LocalTime.now().hour,
+        initialMinute = toDoDetails.dueTime?.minute ?: 0,
+        is24Hour = false
     )
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
+        // Task Title Section
         Column {
+            Text(
+                text = "Task title",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             OutlinedTextField(
                 value = toDoDetails.title,
                 onValueChange = {
                     if (it.length <= titleMax) onValueChange(toDoDetails.copy(title = it))
                 },
-                label = { Text("Title") },
-                placeholder = { Text("e.g. Finish project report") },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(R.drawable.edit_task),
-                        contentDescription = null
-                    )
-                },
-
-                trailingIcon = {
-                    if (toDoDetails.title.isNotEmpty()) {
-                        IconButton(onClick = { onValueChange(toDoDetails.copy(title = "")) }) {
-                            Icon(
-                                painter = painterResource(R.drawable.delete_icon),
-                                contentDescription = "Clear title"
-                            )
-                        }
-                    }
-                },
-                supportingText = {
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        if (toDoDetails.title.isNotEmpty() && toDoDetails.title.trim().length < 3) {
-                            Text(
-                                text = "Min 3 characters",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.weight(1f)
-                            )
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                        Text(
-                            text = "${toDoDetails.title.length}/$titleMax",
-                            style = MaterialTheme.typography.labelSmall,
-                            textAlign = TextAlign.End
-                        )
-                    }
-                },
+                placeholder = { Text("e.g. Complete Movie App README") },
                 singleLine = true,
                 enabled = enabled,
                 isError = toDoDetails.title.isNotEmpty() && toDoDetails.title.trim().length < 3,
-                shape = RoundedCornerShape(14.dp),
-                colors = fieldColors,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    errorBorderColor = Color.Transparent,
+                    errorContainerColor = Color.Transparent
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = if (toDoDetails.title.isNotEmpty() && toDoDetails.title.trim().length < 3)
+                    MaterialTheme.colorScheme.error
+                else
+                    MaterialTheme.colorScheme.outlineVariant
+            )
+            if (toDoDetails.title.isNotEmpty() && toDoDetails.title.trim().length < 3) {
+                Text(
+                    text = "Min 3 characters",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
         }
 
-        // Description field
-        OutlinedTextField(
-            value = toDoDetails.description,
-            onValueChange = {
-                if (it.length <= descMax) onValueChange(toDoDetails.copy(description = it))
-            },
-            label = { Text("Description") },
-            placeholder = { Text("Add notes or details (optional)") },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.notes),
-                    contentDescription = null,
-                    modifier = Modifier.padding(bottom = 60.dp) // aligns icon to top
-                )
-            },
-            supportingText = {
-                Text(
-                    text = "${toDoDetails.description.length}/$descMax",
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.End
-                )
-            },
-            enabled = enabled,
-            minLines = 4,
-            maxLines = 6,
-            shape = RoundedCornerShape(14.dp),
-            colors = fieldColors,
-            modifier = Modifier.fillMaxWidth()
-        )
+        // Category Section
+        Column {
+            Text(
+                text = "Category",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            var expanded by remember { mutableStateOf(false) }
+            val categories = listOf("Development", "Study", "Extra")
 
-        if (enabled) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .clickable { expanded = true }
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .padding(16.dp)
             ) {
-                Icon(
-                    painterResource(R.drawable.info),
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = toDoDetails.category,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Icon(
+                        painter = painterResource(android.R.drawable.arrow_down_float),
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier.fillMaxWidth(0.85f)
+                ) {
+                    categories.forEach { category ->
+                        DropdownMenuItem(
+                            text = { Text(category) },
+                            onClick = {
+                                onValueChange(toDoDetails.copy(category = category))
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+        }
+
+        // Due Section
+        Column {
+            Text(
+                text = "Due",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            val dateDisplay = when (toDoDetails.dueDate) {
+                null -> "Select Date"
+                LocalDate.now() -> "Today"
+                LocalDate.now().plusDays(1) -> "Tomorrow"
+                else -> toDoDetails.dueDate.format(DateTimeFormatter.ofPattern("MMM d"))
+            }
+            val timeDisplay = toDoDetails.dueTime?.format(DateTimeFormatter.ofPattern("h:mm a")) ?: "Select Time"
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .clickable { showDatePicker = true }
+                    .background(
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        RoundedCornerShape(12.dp)
+                    )
+                    .padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.schedule),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = if (toDoDetails.dueDate != null) "$dateDisplay, $timeDisplay" else "Set due date & time",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+
+        // Description Section
+        Column {
+            Text(
+                text = "Description",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            OutlinedTextField(
+                value = toDoDetails.description,
+                onValueChange = {
+                    if (it.length <= descMax) onValueChange(toDoDetails.copy(description = it))
+                },
+                placeholder = { Text("What needs to be done?") },
+                minLines = 3,
+                maxLines = 5,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+        }
+    }
+
+    // Date Picker Dialog
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selectedDate = datePickerState.selectedDateMillis?.let {
+                        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                    }
+                    onValueChange(toDoDetails.copy(dueDate = selectedDate))
+                    showDatePicker = false
+                    showTimePicker = true
+                }) {
+                    Text("Next")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    // Time Picker Dialog
+    if (showTimePicker) {
+        TimePickerDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
+                    onValueChange(toDoDetails.copy(dueTime = selectedTime))
+                    showTimePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            TimePicker(state = timePickerState)
+        }
+    }
+}
+
+@Composable
+fun TimePickerDialog(
+    onDismissRequest: () -> Unit,
+    confirmButton: @Composable () -> Unit,
+    dismissButton: @Composable () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismissRequest,
+    ) {
+        androidx.compose.material3.Surface(
+            shape = MaterialTheme.shapes.extraLarge,
+            tonalElevation = 6.dp,
+            modifier = Modifier.width(320.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
-                    text = "Title is required (min 3 characters)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "Select Time",
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp)
                 )
+                content()
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    dismissButton()
+                    confirmButton()
+                }
             }
         }
     }
