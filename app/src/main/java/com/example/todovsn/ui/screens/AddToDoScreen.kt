@@ -1,6 +1,7 @@
 package com.example.todovsn.ui.screens
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -43,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -175,7 +178,20 @@ private fun ToDoInputForm(
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
-    val datePickerState = rememberDatePickerState()
+    val context = LocalContext.current
+
+    val datePickerState = rememberDatePickerState(
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                // Get today's date in UTC at 00:00
+                val todayMillis = LocalDate.now()
+                    .atStartOfDay(ZoneId.of("UTC"))
+                    .toInstant()
+                    .toEpochMilli()
+                return utcTimeMillis >= todayMillis
+            }
+        }
+    )
     val timePickerState = rememberTimePickerState(
         initialHour = toDoDetails.dueTime?.hour ?: LocalTime.now().hour,
         initialMinute = toDoDetails.dueTime?.minute ?: 0,
@@ -289,9 +305,9 @@ private fun ToDoInputForm(
         // Due Section
         Column {
             Text(
-                text = "Due",
+                text = "Due (Required)",
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (toDoDetails.dueDate == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             val dateDisplay = when (toDoDetails.dueDate) {
@@ -321,13 +337,14 @@ private fun ToDoInputForm(
                         painter = painterResource(R.drawable.schedule),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = if (toDoDetails.dueDate == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(
-                        text = if (toDoDetails.dueDate != null) "$dateDisplay, $timeDisplay" else "Set due date & time",
+                        text = if (toDoDetails.dueDate != null) "$dateDisplay, $timeDisplay" else "Tap to set date & time",
                         style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        color = if (toDoDetails.dueDate == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -395,8 +412,13 @@ private fun ToDoInputForm(
             confirmButton = {
                 TextButton(onClick = {
                     val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
-                    onValueChange(toDoDetails.copy(dueTime = selectedTime))
-                    showTimePicker = false
+                    // If date is today, check if time is in the past
+                    if (toDoDetails.dueDate == LocalDate.now() && selectedTime.isBefore(LocalTime.now())) {
+                        Toast.makeText(context, "Cannot select a past time for today", Toast.LENGTH_SHORT).show()
+                    } else {
+                        onValueChange(toDoDetails.copy(dueTime = selectedTime))
+                        showTimePicker = false
+                    }
                 }) {
                     Text("OK")
                 }
