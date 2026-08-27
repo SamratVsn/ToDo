@@ -253,7 +253,7 @@ private fun ToDoInputForm(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             var expanded by remember { mutableStateOf(false) }
-            val categories = listOf("Development", "Study", "Extra")
+            val categories = listOf("Study", "Development", "Routine", "Extra", "Productive", "Important")
 
             Box(
                 modifier = Modifier
@@ -305,9 +305,9 @@ private fun ToDoInputForm(
         // Due Section
         Column {
             Text(
-                text = "Due (Required)",
+                text = "Due",
                 style = MaterialTheme.typography.labelLarge,
-                color = if (toDoDetails.dueDate == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             val dateDisplay = when (toDoDetails.dueDate) {
@@ -337,14 +337,14 @@ private fun ToDoInputForm(
                         painter = painterResource(R.drawable.schedule),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
-                        tint = if (toDoDetails.dueDate == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(
                         text = if (toDoDetails.dueDate != null) "$dateDisplay, $timeDisplay" else "Tap to set date & time",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
-                        color = if (toDoDetails.dueDate == null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
