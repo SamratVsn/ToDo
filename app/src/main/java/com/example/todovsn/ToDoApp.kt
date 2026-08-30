@@ -1,114 +1,103 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 package com.example.todovsn
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.todovsn.ui.navigation.ToDoNavHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.surfaceColorAtElevation
-import androidx.compose.ui.draw.clip
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.currentBackStackEntryAsState
+
+sealed class BottomNavItem(val route: String, val icon: Int, val label: String) {
+    object Home : BottomNavItem("home", R.drawable.notes, "Home")
+    object Profile : BottomNavItem("profile", R.drawable.profile, "Profile")
+    object Settings : BottomNavItem("settings", R.drawable.settings, "Settings")
+}
 
 @Composable
 fun ToDoApp(
     navController: NavHostController = rememberNavController()
 ){
-    ToDoNavHost(navController = navController)
+    Scaffold(
+        bottomBar = {
+            ToDoBottomNavigation(navController = navController)
+        }
+    ) { innerPadding ->
+        ToDoNavHost(
+            navController = navController,
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
+        )
+    }
 }
 
 @Composable
-fun ToDoAppBar(
-    title: String,
-    canNavigateBack: Boolean,
-    modifier: Modifier = Modifier,
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-    onInfoClick: () -> Unit = { },
-    onEditClick: (() -> Unit)? = null,
-    navigateUp: () -> Unit = {},
-    showInfoButton: Boolean = false,
-){
-    val colorScheme = MaterialTheme.colorScheme
-
-    CenterAlignedTopAppBar(
-        title = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 0.5.sp
-                ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        actions = {
-            if (showInfoButton) {
-                IconButton(onClick = onInfoClick) {
-                    Icon(
-                        painter = painterResource(R.drawable.info),
-                        contentDescription = stringResource(R.string.info)
-                    )
-                }
-            }
-            if (onEditClick != null) {
-                IconButton(onClick = onEditClick) {
-                    Icon(
-                        painter = painterResource(R.drawable.edit_task),
-                        contentDescription = stringResource(R.string.edit_task)
-                    )
-                }
-            }
-        },
-        modifier = modifier,
-        scrollBehavior = scrollBehavior,
-        navigationIcon = {
-            AnimatedVisibility(
-                visible = canNavigateBack,
-                enter = fadeIn() + slideInHorizontally(),
-                exit = fadeOut() + slideOutHorizontally()
-            ) {
-                IconButton(
-                    onClick = navigateUp,
-                    modifier = Modifier
-                        .padding(start = 4.dp)
-                        .clip(CircleShape)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.arrow_back),
-                        contentDescription = "Arrow Back",
-                        tint = colorScheme.onSurface
-                    )
-                }
-            }
-        },
-        colors = topAppBarColors(
-            containerColor = colorScheme.surface,
-            scrolledContainerColor = colorScheme.surfaceColorAtElevation(3.dp),
-            navigationIconContentColor = colorScheme.onSurface,
-            titleContentColor = colorScheme.onSurface,
-            actionIconContentColor = Color.Unspecified
-        )
+fun ToDoBottomNavigation(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
+    val items = listOf(
+        BottomNavItem.Home,
+        BottomNavItem.Profile,
+        BottomNavItem.Settings
     )
+
+    Surface(
+        modifier = modifier
+            .navigationBarsPadding()
+            .padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
+            .fillMaxWidth(),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+        tonalElevation = 8.dp,
+        shadowElevation = 8.dp
+    ) {
+        NavigationBar(
+            containerColor = Color.Transparent,
+            modifier = Modifier.height(80.dp),
+            windowInsets = WindowInsets(0, 0, 0, 0)
+        ) {
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
+
+            items.forEach { item ->
+                NavigationBarItem(
+                    icon = { Icon(painterResource(item.icon), contentDescription = item.label) },
+                    label = { Text(item.label, style = MaterialTheme.typography.labelSmall) },
+                    selected = currentRoute == item.route,
+                    onClick = {
+                        if (currentRoute != item.route) {
+                            navController.navigate(item.route) {
+                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+            }
+        }
+    }
 }

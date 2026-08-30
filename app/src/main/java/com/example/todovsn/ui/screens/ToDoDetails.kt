@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -40,7 +38,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
-import com.example.todovsn.ToDoAppBar
+import androidx.compose.material3.OutlinedButton
 import com.example.todovsn.data.ToDoItem
 import com.example.todovsn.ui.AppViewModelProvider
 import com.example.todovsn.ui.navigation.NavDestination
@@ -77,19 +74,12 @@ fun ToDoDetailsScreen(
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
-        topBar = {
-            ToDoAppBar(
-                title = stringResource(ToDoDetailsDestination.titleRes),
-                canNavigateBack = true,
-                navigateUp = navigateBack,
-                onEditClick = { navigateToEditToDo(uiState.toDoDetails.id) }
-            )
-        },
         modifier = modifier
     ) { innerPadding ->
         ToDoDetailsBody(
             toDoDetailsUiState = uiState,
             onToggleCompleted = { viewModel.toggleCompleted() },
+            onEditClick = { navigateToEditToDo(uiState.toDoDetails.id) },
             onDelete = {
                 coroutineScope.launch {
                     viewModel.deleteToDo()
@@ -97,11 +87,7 @@ fun ToDoDetailsScreen(
                 }
             },
             modifier = Modifier
-                .padding(
-                    start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
-                    end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
-                    top = innerPadding.calculateTopPadding()
-                )
+                .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         )
     }
@@ -112,6 +98,7 @@ fun ToDoDetailsScreen(
 private fun ToDoDetailsBody(
     toDoDetailsUiState: ToDoDetailsUiState,
     onToggleCompleted: () -> Unit,
+    onEditClick: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -156,6 +143,26 @@ private fun ToDoDetailsBody(
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = if (toDo.isCompleted) "Completed" else "Mark as done",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        OutlinedButton(
+            onClick = onEditClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.edit_task),
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Edit Task",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )

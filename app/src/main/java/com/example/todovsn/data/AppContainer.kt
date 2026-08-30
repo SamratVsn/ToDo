@@ -1,9 +1,11 @@
 package com.example.todovsn.data
 
 import android.content.Context
+import com.example.todovsn.data.preference.PreferenceRepository
 
 interface AppContainer {
     val toDoRepository: ToDoRepository
+    val userPreferencesRepository: PreferenceRepository
 }
 
 /**
@@ -15,5 +17,9 @@ class AppDataContainer(private val context: Context) : AppContainer {
      */
     override val toDoRepository: ToDoRepository by lazy {
         OfflineToDoRepository(ToDoDatabase.getDatabase(context).toDoDao())
+    }
+
+    override val userPreferencesRepository: PreferenceRepository by lazy {
+        PreferenceRepository(context)
     }
 }

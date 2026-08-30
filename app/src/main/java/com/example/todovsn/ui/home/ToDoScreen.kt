@@ -38,7 +38,6 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -50,7 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,9 +56,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
-import com.example.todovsn.ToDoAppBar
 import com.example.todovsn.data.ToDoItem
 import com.example.todovsn.ui.AppViewModelProvider
 import com.example.todovsn.ui.navigation.NavDestination
@@ -78,24 +76,13 @@ object HomeDestination : NavDestination {
 fun ToDoScreen(
     navigateToTaskEntry: () -> Unit,
     navigateToTaskUpdate: (Int) -> Unit,
-    onInfoClick : () -> Unit = { },
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
-    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val homeUiState by viewModel.homeUiState.collectAsState()
 
     Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            ToDoAppBar(
-                title = stringResource(HomeDestination.titleRes),
-                canNavigateBack = false,
-                scrollBehavior = scrollBehavior,
-                onInfoClick = onInfoClick,
-                showInfoButton = true,
-            )
-        },
+        modifier = modifier,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = navigateToTaskEntry,
@@ -105,7 +92,7 @@ fun ToDoScreen(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.add_task),
+                    painter = painterResource(R.drawable.add),
                     contentDescription = stringResource(R.string.add_screen),
                 )
             }
@@ -116,11 +103,14 @@ fun ToDoScreen(
             onToDoClick = navigateToTaskUpdate,
             onCheckedChange = viewModel::toggleCompleted,
             onDelete = viewModel::deleteToDo,
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding(),
             contentPadding = innerPadding
         )
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -204,21 +194,48 @@ private fun ToDoList(
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
+
+    val activeTasks = toDoList.filter { !it.isCompleted }
+    val completedTasks = toDoList.filter { it.isCompleted }
+
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(items = toDoList, key = { it.id }) { item ->
-            ToDoCard(
-                toDo = item,
-                onCheckedChange = onCheckedChange,
-                onDelete = onDelete,
-                onClick = { onToDoClick(item) },
-                modifier = Modifier
-                    .padding(vertical = 4.dp)
-                    .animateItem()
-            )
+        if (activeTasks.isNotEmpty()) {
+            item {
+                SectionHeader(title = "Tasks")
+            }
+            items(items = activeTasks, key = { it.id }) { item ->
+                ToDoCard(
+                    toDo = item,
+                    onCheckedChange = onCheckedChange,
+                    onDelete = onDelete,
+                    onClick = { onToDoClick(item) },
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .animateItem()
+                )
+            }
+        }
+
+        if (completedTasks.isNotEmpty()) {
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                SectionHeader(title = "Completed")
+            }
+            items(items = completedTasks, key = { it.id }) { item ->
+                ToDoCard(
+                    toDo = item,
+                    onCheckedChange = onCheckedChange,
+                    onDelete = onDelete,
+                    onClick = { onToDoClick(item) },
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .animateItem()
+                )
+            }
         }
     }
 }
@@ -375,4 +392,15 @@ private fun ToDoCard(
             }
         }
     }
+}
+
+@Composable
+private fun SectionHeader(title: String) {
+    Text(
+        text = "$title",
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)
+    )
 }

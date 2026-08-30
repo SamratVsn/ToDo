@@ -43,11 +43,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
-import com.example.todovsn.ToDoAppBar
 import com.example.todovsn.ui.AppViewModelProvider
 import com.example.todovsn.ui.navigation.NavDestination
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
 object AddToDoDestination : NavDestination {
     override val route = "item_entry"
@@ -65,20 +63,10 @@ enum class TaskScreenMode {
 fun AddToDoScreen(
     mode: TaskScreenMode = TaskScreenMode.ADD,
     navigateBack: () -> Unit,
-    onNavigateUp: () -> Unit,
-    canNavigateBack: Boolean = true,
     viewModel: AddViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val coroutineScope = rememberCoroutineScope()
-    Scaffold(
-        topBar = {
-            ToDoAppBar(
-                title = stringResource(AddToDoDestination.titleRes),
-                canNavigateBack = canNavigateBack,
-                navigateUp = onNavigateUp,
-            )
-        }
-    ) { innerPadding ->
+    Scaffold { innerPadding ->
         AddToDoBody(
             toDoUiState = viewModel.toDoUiState,
             onToDoValueChange = viewModel::updateUiState,
@@ -96,6 +84,7 @@ fun AddToDoScreen(
         )
     }
 }
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable

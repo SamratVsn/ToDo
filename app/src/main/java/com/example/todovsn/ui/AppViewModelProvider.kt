@@ -10,9 +10,25 @@ import com.example.todovsn.ui.home.HomeViewModel
 import com.example.todovsn.ui.screens.AddViewModel
 import com.example.todovsn.ui.screens.DetailsViewModel
 import com.example.todovsn.ui.screens.EditViewModel
+import com.example.todovsn.ui.screens.ProfileViewModel
+import com.example.todovsn.ui.screens.SettingsViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
+
+        initializer {
+            SettingsViewModel(
+                toDoApplication().container.userPreferencesRepository,
+                toDoApplication().container.toDoRepository
+            )
+        }
+
+        initializer {
+            ProfileViewModel(
+                toDoApplication().container.userPreferencesRepository,
+                toDoApplication().container.toDoRepository
+            )
+        }
 
         initializer {
             EditViewModel(
@@ -29,11 +45,14 @@ object AppViewModelProvider {
         }
 
         initializer {
-            AddViewModel(toDoApplication().container.toDoRepository)
+            AddViewModel(
+                toDoApplication().container.toDoRepository,
+                toDoApplication().container.userPreferencesRepository
+            )
         }
 
         initializer {
-            HomeViewModel(toDoApplication().container.toDoRepository)
+            HomeViewModel(toDoApplication().container.toDoRepository,)
         }
     }
 }

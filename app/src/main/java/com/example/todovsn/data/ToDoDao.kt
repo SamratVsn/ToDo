@@ -24,4 +24,7 @@ interface ToDoDao {
 
     @Query("SELECT * from Tasks ORDER BY title ASC")
     fun getAllToDos(): Flow<List<ToDoItem>>
+
+    @Query("DELETE FROM Tasks")
+    suspend fun deleteAll()
 }

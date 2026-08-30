@@ -12,4 +12,6 @@ class OfflineToDoRepository(private val toDoDao: ToDoDao) : ToDoRepository {
     override suspend fun deleteToDo(item: ToDoItem) = toDoDao.delete(item)
 
     override suspend fun updateToDo(item: ToDoItem) = toDoDao.update(item)
+
+    override suspend fun deleteAllToDo() = toDoDao.deleteAll()
 }

@@ -6,9 +6,13 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.todovsn.data.ToDoRepository
 import com.example.todovsn.data.ToDoItem
+import com.example.todovsn.data.preference.PreferenceRepository
 import java.time.LocalDateTime
 
-class AddViewModel(private val toDoRepository: ToDoRepository) : ViewModel() {
+class AddViewModel(
+    private val toDoRepository: ToDoRepository,
+    private val preferenceRepository: PreferenceRepository
+) : ViewModel() {
     var toDoUiState by mutableStateOf(ToDoUiState())
         private set
 
@@ -21,6 +25,7 @@ class AddViewModel(private val toDoRepository: ToDoRepository) : ViewModel() {
         if (!validateInput()) return false
 
         toDoRepository.insertToDo(toDoUiState.toDoDetails.toToDo())
+        preferenceRepository.incrementTotalTasksCreated()
         return true
     }
 

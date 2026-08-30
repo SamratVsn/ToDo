@@ -11,8 +11,10 @@ import com.example.todovsn.ui.home.HomeDestination
 import com.example.todovsn.ui.home.ToDoScreen
 import com.example.todovsn.ui.screens.AddToDoDestination
 import com.example.todovsn.ui.screens.AddToDoScreen
-import com.example.todovsn.ui.screens.InfoDestination
-import com.example.todovsn.ui.screens.InfoScreen
+import com.example.todovsn.ui.screens.SettingsDestination
+import com.example.todovsn.ui.screens.SettingsScreen
+import com.example.todovsn.ui.screens.ProfileDestination
+import com.example.todovsn.ui.screens.ProfileScreen
 import com.example.todovsn.ui.screens.ToDoDetailsDestination
 import com.example.todovsn.ui.screens.ToDoDetailsScreen
 import com.example.todovsn.ui.screens.ToDoEditDestination
@@ -35,18 +37,12 @@ fun ToDoNavHost(
                 },
                 navigateToTaskUpdate = {
                     navController.navigate("${ToDoDetailsDestination.route}/${it}")
-                },
-                onInfoClick = {
-                    navController.navigate(InfoDestination.route)
-                },
+                }
             )
         }
 
         composable(route = AddToDoDestination.route) {
             AddToDoScreen(
-                onNavigateUp = {
-                    navController.navigateUp()
-                },
                 navigateBack = {
                     navController.popBackStack()
                 }
@@ -78,19 +74,16 @@ fun ToDoNavHost(
             ToDoEditScreen(
                 navigateBack = {
                     navController.popBackStack()
-                },
-                onNavigateUp = {
-                    navController.navigateUp()
                 }
             )
         }
 
-        composable(route = InfoDestination.route) {
-            InfoScreen(
-                onBackPressed = {
-                    navController.popBackStack()
-                }
-            )
+        composable(route = SettingsDestination.route) {
+            SettingsScreen()
+        }
+
+        composable(route = ProfileDestination.route) {
+            ProfileScreen()
         }
     }
 }
