@@ -1,7 +1,6 @@
 package com.example.todovsn.ui.screens
 
 import android.os.Build
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,8 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,12 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,11 +47,7 @@ import com.example.todovsn.ToDoAppBar
 import com.example.todovsn.ui.AppViewModelProvider
 import com.example.todovsn.ui.navigation.NavDestination
 import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
 
 object AddToDoDestination : NavDestination {
     override val route = "item_entry"
@@ -175,27 +162,13 @@ private fun ToDoInputForm(
     val titleMax = 60
     val descMax = 500
 
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
-
-    val context = LocalContext.current
-
-    val datePickerState = rememberDatePickerState(
-        selectableDates = object : SelectableDates {
-            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                // Get today's date in UTC at 00:00
-                val todayMillis = LocalDate.now()
-                    .atStartOfDay(ZoneId.of("UTC"))
-                    .toInstant()
-                    .toEpochMilli()
-                return utcTimeMillis >= todayMillis
-            }
-        }
-    )
-    val timePickerState = rememberTimePickerState(
-        initialHour = toDoDetails.dueTime?.hour ?: LocalTime.now().hour,
-        initialMinute = toDoDetails.dueTime?.minute ?: 0,
-        is24Hour = false
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+        focusedContainerColor = Color.Transparent,
+        unfocusedContainerColor = Color.Transparent,
+        errorBorderColor = Color.Transparent,
+        errorContainerColor = Color.Transparent
     )
 
     Column(
@@ -302,54 +275,6 @@ private fun ToDoInputForm(
             }
         }
 
-        // Due Section
-        Column {
-            Text(
-                text = "Due",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            val dateDisplay = when (toDoDetails.dueDate) {
-                null -> "Select Date"
-                LocalDate.now() -> "Today"
-                LocalDate.now().plusDays(1) -> "Tomorrow"
-                else -> toDoDetails.dueDate.format(DateTimeFormatter.ofPattern("MMM d"))
-            }
-            val timeDisplay = toDoDetails.dueTime?.format(DateTimeFormatter.ofPattern("h:mm a")) ?: "Select Time"
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .clickable { showDatePicker = true }
-                    .background(
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        RoundedCornerShape(12.dp)
-                    )
-                    .padding(16.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.schedule),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Text(
-                        text = if (toDoDetails.dueDate != null) "$dateDisplay, $timeDisplay" else "Tap to set date & time",
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-
         // Description Section
         Column {
             Text(
@@ -376,97 +301,6 @@ private fun ToDoInputForm(
                     .fillMaxWidth()
                     .padding(top = 8.dp)
             )
-        }
-    }
-
-    // Date Picker Dialog
-    if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val selectedDate = datePickerState.selectedDateMillis?.let {
-                        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
-                    }
-                    onValueChange(toDoDetails.copy(dueDate = selectedDate))
-                    showDatePicker = false
-                    showTimePicker = true
-                }) {
-                    Text("Next")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-
-    // Time Picker Dialog
-    if (showTimePicker) {
-        TimePickerDialog(
-            onDismissRequest = { showTimePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val selectedTime = LocalTime.of(timePickerState.hour, timePickerState.minute)
-                    // If date is today, check if time is in the past
-                    if (toDoDetails.dueDate == LocalDate.now() && selectedTime.isBefore(LocalTime.now())) {
-                        Toast.makeText(context, "Cannot select a past time for today", Toast.LENGTH_SHORT).show()
-                    } else {
-                        onValueChange(toDoDetails.copy(dueTime = selectedTime))
-                        showTimePicker = false
-                    }
-                }) {
-                    Text("OK")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showTimePicker = false }) {
-                    Text("Cancel")
-                }
-            }
-        ) {
-            TimePicker(state = timePickerState)
-        }
-    }
-}
-
-@Composable
-fun TimePickerDialog(
-    onDismissRequest: () -> Unit,
-    confirmButton: @Composable () -> Unit,
-    dismissButton: @Composable () -> Unit,
-    content: @Composable () -> Unit,
-) {
-    androidx.compose.ui.window.Dialog(
-        onDismissRequest = onDismissRequest,
-    ) {
-        androidx.compose.material3.Surface(
-            shape = MaterialTheme.shapes.extraLarge,
-            tonalElevation = 6.dp,
-            modifier = Modifier.width(320.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Select Time",
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp)
-                )
-                content()
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 20.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    dismissButton()
-                    confirmButton()
-                }
-            }
         }
     }
 }

@@ -235,7 +235,7 @@ private fun ToDoCard(
 ) {
 
     val timeFormatter = DateTimeFormatter.ofPattern("h:mm a")
-    val dateFormatter = DateTimeFormatter.ofPattern("MMM d")
+    val dateFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy")
 
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -355,30 +355,22 @@ private fun ToDoCard(
 
                     Spacer(modifier = Modifier.height(2.dp))
 
-                    // Line 2: {Category} · {dueDate} · {dueTime}
-                    val dateDisplay = when (toDo.dueDate) {
-                        null -> null
+                    // Line 2: {Category} · {Date} · {Time}
+                    val dateDisplay = when (toDo.createdAt.toLocalDate()) {
                         LocalDate.now() -> "Today"
-                        LocalDate.now().plusDays(1) -> "Tomorrow"
-                        else -> toDo.dueDate.format(dateFormatter)
+                        else -> toDo.createdAt.format(dateFormatter)
                     }
-                    val timeDisplay = toDo.dueTime?.format(timeFormatter)
+                    val timeDisplay = toDo.createdAt.format(timeFormatter)
 
-                    val metadata = listOfNotNull(
-                        toDo.category,
-                        dateDisplay,
-                        timeDisplay
-                    ).joinToString(" · ")
+                    val metadata = "${toDo.category} · $dateDisplay · $timeDisplay"
 
-                    if (metadata.isNotEmpty()) {
-                        Text(
-                            text = metadata,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
+                    Text(
+                        text = metadata,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }

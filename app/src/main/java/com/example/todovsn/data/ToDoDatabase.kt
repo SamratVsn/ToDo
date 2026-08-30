@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 
 @TypeConverters(DateConverters::class)
-@Database(entities = [ToDoItem::class], version = 5, exportSchema = false)
+@Database(entities = [ToDoItem::class], version = 6, exportSchema = false)
 abstract class ToDoDatabase : RoomDatabase() {
     abstract fun toDoDao() : ToDoDao
 

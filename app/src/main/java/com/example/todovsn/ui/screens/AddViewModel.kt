@@ -6,9 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.todovsn.data.ToDoRepository
 import com.example.todovsn.data.ToDoItem
-import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
 
 class AddViewModel(private val toDoRepository: ToDoRepository) : ViewModel() {
     var toDoUiState by mutableStateOf(ToDoUiState())
@@ -28,7 +26,7 @@ class AddViewModel(private val toDoRepository: ToDoRepository) : ViewModel() {
 
     private fun validateInput(uiState: ToDoDetails = toDoUiState.toDoDetails) : Boolean {
         return with(uiState) {
-            title.isNotBlank() && title.trim().length >= 3 && dueDate != null
+            title.isNotBlank() && title.trim().length >= 3
         }
     }
 }
@@ -43,8 +41,6 @@ data class ToDoDetails(
     val title: String = "",
     val description: String = "",
     val category: String = "Extra",
-    val dueDate: LocalDate? = null,
-    val dueTime: LocalTime? = null,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val isCompleted: Boolean = false,
 )
@@ -54,8 +50,6 @@ fun ToDoDetails.toToDo(): ToDoItem = ToDoItem(
     title = title,
     description = description,
     category = category,
-    dueDate = dueDate,
-    dueTime = dueTime,
     createdAt = createdAt,
     isCompleted = isCompleted
 )
@@ -70,8 +64,6 @@ fun ToDoItem.toToDoDetails() : ToDoDetails = ToDoDetails(
     title = title,
     description = description,
     category = category,
-    dueDate = dueDate,
-    dueTime = dueTime,
     createdAt = createdAt,
     isCompleted = isCompleted
 )

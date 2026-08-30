@@ -55,7 +55,6 @@ import com.example.todovsn.data.ToDoItem
 import com.example.todovsn.ui.AppViewModelProvider
 import com.example.todovsn.ui.navigation.NavDestination
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 object ToDoDetailsDestination : NavDestination {
@@ -281,35 +280,6 @@ fun ToDoDetailsCard(
                 else
                     MaterialTheme.colorScheme.onSurface
             )
-
-            // Due Date & Time
-            if (toDo.dueDate != null) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.schedule),
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    
-                    val dateDisplay = when (toDo.dueDate) {
-                        LocalDate.now() -> "Today"
-                        LocalDate.now().plusDays(1) -> "Tomorrow"
-                        else -> toDo.dueDate.format(DateTimeFormatter.ofPattern("E, MMM d"))
-                    }
-                    val timeDisplay = toDo.dueTime?.format(DateTimeFormatter.ofPattern("h:mm a")) ?: ""
-                    
-                    Text(
-                        text = "$dateDisplay ${if (timeDisplay.isNotEmpty()) "· $timeDisplay" else ""}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-            }
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
