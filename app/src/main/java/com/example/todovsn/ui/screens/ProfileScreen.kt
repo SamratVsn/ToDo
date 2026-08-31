@@ -144,28 +144,6 @@ fun ProfileScreen(
                     currentTheme = uiState.currentTheme
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = { /* Future functionality */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.settings),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text("Profile Settings", fontWeight = FontWeight.Bold)
-                }
-                
                 Spacer(modifier = Modifier.height(100.dp))
             }
         }
@@ -239,19 +217,22 @@ private fun StatsCardsSection(total: Int, done: Int, today: Int) {
             modifier = Modifier.weight(1f),
             label = "Total Tasks",
             value = total.toString(),
-            containerColor = MaterialTheme.colorScheme.primaryContainer
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
         StatCard(
             modifier = Modifier.weight(1f),
             label = "Completed",
             value = done.toString(),
-            containerColor = Color(0xFFD1FAE5) // Light green
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
         )
         StatCard(
             modifier = Modifier.weight(1f),
             label = "Today",
             value = today.toString(),
-            containerColor = Color(0xFFDBEAFE) // Light blue
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
         )
     }
 }
@@ -261,12 +242,16 @@ private fun StatCard(
     modifier: Modifier = Modifier,
     label: String,
     value: String,
-    containerColor: Color
+    containerColor: Color,
+    contentColor: Color
 ) {
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
+        colors = CardDefaults.cardColors(
+            containerColor = containerColor,
+            contentColor = contentColor
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
@@ -279,13 +264,13 @@ private fun StatCard(
                 text = value,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+                color = contentColor
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = contentColor.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center
             )
         }

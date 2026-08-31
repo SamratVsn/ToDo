@@ -1,8 +1,11 @@
 package com.example.todovsn.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -176,8 +179,8 @@ private fun SettingsContent(
             SettingsSectionHeader("DATA MANAGEMENT")
             SettingsItem(
                 icon = painterResource(R.drawable.restart_alt),
-                title = "Reset Total Tasks",
-                subtitle = "Reset lifetime task counter",
+                title = "Reset Counter",
+                subtitle = "Reset lifetime (total) task counter",
                 onClick = onResetClick
             )
             SettingsItem(
@@ -192,14 +195,14 @@ private fun SettingsContent(
             SettingsSectionHeader("ABOUT")
             SettingsItem(
                 icon = painterResource(R.drawable.info),
-                title = "About ToDo",
+                title = "About Tasks",
                 subtitle = "Learn more about the app",
-                onClick = { /* Show about */ }
+                onClick = { uriHandler.openUri("https://www.samratparajuli0.com.np/projects/todo") }
             )
             SettingsItem(
                 icon = painterResource(R.drawable.notes),
                 title = "Version",
-                subtitle = "1.0.0",
+                subtitle = "1.1.0",
                 onClick = { }
             )
             SettingsItem(
@@ -307,13 +310,13 @@ private fun AboutAppCard() {
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
-                text = "🚀 About ToDoVsn",
+                text = "🚀 About Tasks",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "A modern task management app built with the latest Android technologies.",
+                text = "Tasks is a sleek, productivity-focused task manager designed to help you stay organized and reach your goals. It features a modern user interface with dark mode support, persistent task tracking, and intuitive swipe gestures for a seamless experience.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = colorScheme.onSurfaceVariant
             )
@@ -321,6 +324,7 @@ private fun AboutAppCard() {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun BuiltWithCard() {
     val colorScheme = MaterialTheme.colorScheme
@@ -337,13 +341,16 @@ private fun BuiltWithCard() {
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(12.dp))
-            val techs = listOf("Kotlin", "Compose", "Room", "Coroutines", "MVVM")
-            Row(modifier = Modifier.fillMaxWidth()) {
+            val techs = listOf("Kotlin", "Compose", "Room", "DataStore", "Coroutines", "Navigation", "MVVM")
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 techs.forEach { tech ->
                     Surface(
                         color = colorScheme.primaryContainer.copy(alpha = 0.4f),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.padding(end = 8.dp)
+                        shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
                             text = tech,

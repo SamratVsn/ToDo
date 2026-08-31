@@ -6,7 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -25,7 +26,9 @@ import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 
 sealed class BottomNavItem(val route: String, val icon: Int, val label: String) {
@@ -64,12 +67,16 @@ fun ToDoBottomNavigation(
     Surface(
         modifier = modifier
             .navigationBarsPadding()
-            .padding(start = 24.dp, end = 24.dp, bottom = 16.dp)
+            .padding(horizontal = 12.dp, vertical = 12.dp)
             .fillMaxWidth(),
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surface,
         tonalElevation = 8.dp,
-        shadowElevation = 8.dp
+        shadowElevation = 16.dp,
+        border = androidx.compose.foundation.BorderStroke(
+            1.5.dp, 
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+        )
     ) {
         NavigationBar(
             containerColor = Color.Transparent,
@@ -80,21 +87,39 @@ fun ToDoBottomNavigation(
             val currentRoute = navBackStackEntry?.destination?.route
 
             items.forEach { item ->
+                val selected = currentRoute == item.route
                 NavigationBarItem(
-                    icon = { Icon(painterResource(item.icon), contentDescription = item.label) },
-                    label = { Text(item.label, style = MaterialTheme.typography.labelSmall) },
-                    selected = currentRoute == item.route,
+                    icon = { 
+                        Icon(
+                            painter = painterResource(item.icon), 
+                            contentDescription = item.label,
+                            modifier = Modifier.size(26.dp)
+                        ) 
+                    },
+                    label = { 
+                        Text(
+                            text = item.label, 
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.SemiBold,
+                            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                        ) 
+                    },
+                    selected = selected,
                     onClick = {
                         if (currentRoute != item.route) {
                             navController.navigate(item.route) {
-                                popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
                                 launchSingleTop = true
                                 restoreState = true
                             }
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
                     )
                 )
             }

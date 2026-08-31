@@ -1,6 +1,6 @@
-# To-Do Vsn 🚀
+# Tasks 🚀
 
-To-Do Vsn is a lightweight, modern task management application built with Jetpack Compose and Material 3. It provides a seamless experience for organizing daily tasks with a focus on simplicity, performance, and a polished user interface.
+Tasks is a lightweight, modern task management application built with Jetpack Compose and Material 3. It provides a seamless experience for organizing daily tasks with a focus on simplicity, performance, and a polished user interface.
 
 ---
 

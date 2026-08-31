@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "To-Do Vsn"
+rootProject.name = "Tasks"
 include(":app")
