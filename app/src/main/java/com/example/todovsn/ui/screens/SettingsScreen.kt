@@ -11,24 +11,30 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -72,6 +78,7 @@ fun SettingsScreen(
         onThemeClick = { settingsViewModel.showThemeDialog(true) },
         onResetClick = { settingsViewModel.showResetConfirmation(true) },
         onDeleteClick = { settingsViewModel.showDeleteConfirmation(true) },
+        onReminderToggle = { settingsViewModel.setSmartRemindersEnabled(it) },
         modifier = modifier
     )
 
@@ -118,116 +125,170 @@ private fun SettingsContent(
     onThemeClick: () -> Unit,
     onResetClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onReminderToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
     val uriHandler = LocalUriHandler.current
     val colorScheme = MaterialTheme.colorScheme
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        colorScheme.surface,
-                        colorScheme.surfaceVariant
-                    )
-                )
-            )
-    ) {
+    Scaffold(
+        containerColor = colorScheme.background
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
+                .padding(innerPadding)
                 .verticalScroll(scrollState)
-                .padding(24.dp),
+                .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.Start
         ) {
-            Text(
-                text = "Settings",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                color = colorScheme.onSurface,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Settings",
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = colorScheme.onSurface
+                )
+                
+                Surface(
+                    shape = CircleShape,
+                    color = colorScheme.surfaceVariant,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            painter = painterResource(R.drawable.settings),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = colorScheme.onSurface
+                        )
+                    }
+                }
+            }
 
-            SettingsSectionHeader("PROFILE")
-            SettingsItem(
-                icon = painterResource(R.drawable.profile),
-                title = "Display Name",
-                subtitle = uiState.preferences.displayName,
-                onClick = onNameClick
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            SettingsSectionHeader("APPEARANCE")
-            SettingsItem(
-                icon = painterResource(R.drawable.settings),
-                title = "Theme",
-                subtitle = when (uiState.preferences.themeMode) {
-                    ThemeMode.SYSTEM -> "System Default"
-                    ThemeMode.LIGHT -> "Light"
-                    ThemeMode.DARK -> "Dark"
-                },
-                onClick = onThemeClick
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            SettingsSectionHeader("DATA MANAGEMENT")
-            SettingsItem(
-                icon = painterResource(R.drawable.restart_alt),
-                title = "Reset Counter",
-                subtitle = "Reset lifetime (total) task counter",
-                onClick = onResetClick
-            )
-            SettingsItem(
-                icon = painterResource(R.drawable.delete_icon),
-                title = "Delete All Data",
-                subtitle = "Clear all tasks and preferences",
-                onClick = onDeleteClick
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            SettingsSectionHeader("ABOUT")
-            SettingsItem(
-                icon = painterResource(R.drawable.info),
-                title = "About Tasks",
-                subtitle = "Learn more about the app",
-                onClick = { uriHandler.openUri("https://www.samratparajuli0.com.np/projects/todo") }
-            )
-            SettingsItem(
-                icon = painterResource(R.drawable.notes),
-                title = "Version",
-                subtitle = "1.1.0",
-                onClick = { }
-            )
-            SettingsItem(
-                icon = painterResource(android.R.drawable.ic_menu_share),
-                title = "GitHub",
-                subtitle = "View source code",
-                onClick = { uriHandler.openUri("https://github.com/SamratVsn") }
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-            HorizontalDivider(color = colorScheme.outlineVariant.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(32.dp))
 
+            SettingsSectionHeader("PROFILE")
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(28.dp),
+                color = colorScheme.surfaceVariant,
+                border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outline.copy(alpha = 0.1f))
+            ) {
+                Column {
+                    SettingsItem(
+                        icon = R.drawable.profile,
+                        title = "Display Name",
+                        subtitle = uiState.preferences.displayName,
+                        onClick = onNameClick
+                    )
+                    SettingsItem(
+                        icon = R.drawable.settings, // Use an appearance icon if available
+                        title = "Appearance",
+                        subtitle = when (uiState.preferences.themeMode) {
+                            ThemeMode.SYSTEM -> "System Default"
+                            ThemeMode.LIGHT -> "Light"
+                            ThemeMode.DARK -> "Deep Sea (Dark)"
+                        },
+                        onClick = onThemeClick
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // --- Preferences Group ---
+            SettingsSectionHeader("PREFERENCES")
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(28.dp),
+                color = colorScheme.surfaceVariant,
+                border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outline.copy(alpha = 0.1f))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = colorScheme.primary.copy(alpha = 0.1f),
+                        modifier = Modifier.size(44.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(R.drawable.schedule), // Replacement for reminder icon
+                                contentDescription = null,
+                                modifier = Modifier.size(22.dp),
+                                tint = colorScheme.primary
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Smart Reminders",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = uiState.preferences.smartRemindersEnabled,
+                        onCheckedChange = onReminderToggle,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = colorScheme.primary
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // --- Data Management Group ---
+            SettingsSectionHeader("DATA MANAGEMENT")
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(28.dp),
+                color = colorScheme.surfaceVariant,
+                border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outline.copy(alpha = 0.1f))
+            ) {
+                Column {
+                    SettingsItem(
+                        icon = R.drawable.restart_alt,
+                        title = "Reset Counter",
+                        subtitle = "Reset lifetime task counter",
+                        onClick = onResetClick
+                    )
+                    SettingsItem(
+                        icon = R.drawable.delete_icon,
+                        title = "Delete All Data",
+                        subtitle = "Clear all tasks and preferences",
+                        titleColor = colorScheme.error,
+                        onClick = onDeleteClick
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // --- About Group ---
+            SettingsSectionHeader("ABOUT")
             AboutAppCard()
-            Spacer(modifier = Modifier.height(16.dp))
-            BuiltWithCard()
             
             Spacer(modifier = Modifier.height(32.dp))
             Text(
                 text = "© 2026 Samrat Parajuli",
-                fontSize = 12.sp,
-                color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                style = MaterialTheme.typography.labelSmall,
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-            Spacer(modifier = Modifier.height(80.dp))
+            Spacer(modifier = Modifier.height(100.dp))
         }
     }
 }
@@ -236,18 +297,20 @@ private fun SettingsContent(
 private fun SettingsSectionHeader(text: String) {
     Text(
         text = text,
-        style = MaterialTheme.typography.labelMedium,
+        style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.Bold,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        letterSpacing = 1.5.sp,
+        modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
     )
 }
 
 @Composable
 private fun SettingsItem(
-    icon: Painter,
+    icon: Int,
     title: String,
     subtitle: String,
+    titleColor: Color = MaterialTheme.colorScheme.onSurface,
     onClick: () -> Unit
 ) {
     Surface(
@@ -256,44 +319,42 @@ private fun SettingsItem(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier
-                .padding(vertical = 12.dp, horizontal = 4.dp),
+            modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
-                        RoundedCornerShape(12.dp)
-                    ),
-                contentAlignment = Alignment.Center
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                modifier = Modifier.size(44.dp)
             ) {
-                Icon(
-                    painter = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        painter = painterResource(icon),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = titleColor
                 )
                 Text(
                     text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Text(
-                text = "›",
-                fontSize = 24.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                modifier = Modifier.padding(end = 8.dp)
+            Icon(
+                painter = painterResource(R.drawable.arrow_back), // Use a chevron if available
+                contentDescription = null,
+                modifier = Modifier.size(16.dp).background(Color.Transparent).offset(x = 8.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
             )
         }
     }
@@ -302,66 +363,99 @@ private fun SettingsItem(
 @Composable
 private fun AboutAppCard() {
     val colorScheme = MaterialTheme.colorScheme
-    Card(
+    val uriHandler = LocalUriHandler.current
+    
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outlineVariant.copy(alpha = 0.5f))
+        shape = RoundedCornerShape(32.dp),
+        color = colorScheme.surfaceVariant,
+        border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outline.copy(alpha = 0.1f))
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
+        Column(modifier = Modifier.padding(24.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "🚀", fontSize = 24.sp)
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "About Tasks",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "🚀 About Tasks",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                text = "A sleek, productivity-focused manager designed to help you stay organized and reach your goals. Built with love and high-end focus.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = colorScheme.onSurfaceVariant,
+                lineHeight = 24.sp
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Tasks is a sleek, productivity-focused task manager designed to help you stay organized and reach your goals. It features a modern user interface with dark mode support, persistent task tracking, and intuitive swipe gestures for a seamless experience.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = colorScheme.onSurfaceVariant
+                text = "BUILT WITH",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = colorScheme.onSurfaceVariant,
+                letterSpacing = 1.sp
             )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                TechTag("Kotlin")
+                TechTag("Compose")
+                TechTag("Room")
+                TechTag("MVVM")
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = androidx.compose.ui.Modifier.clickable {
+                        uriHandler.openUri("https://github.com/SamratVsn")
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.share),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Source Code",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = colorScheme.onSurface
+                    )
+                }
+                Text(
+                    text = "v1.1.0",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                )
+            }
         }
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun BuiltWithCard() {
-    val colorScheme = MaterialTheme.colorScheme
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outlineVariant.copy(alpha = 0.5f))
+private fun TechTag(name: String) {
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
     ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = "🛠 Built With",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            val techs = listOf("Kotlin", "Compose", "Room", "DataStore", "Coroutines", "Navigation", "MVVM")
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                techs.forEach { tech ->
-                    Surface(
-                        color = colorScheme.primaryContainer.copy(alpha = 0.4f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = tech,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-            }
-        }
+        Text(
+            text = name,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        )
     }
 }
 

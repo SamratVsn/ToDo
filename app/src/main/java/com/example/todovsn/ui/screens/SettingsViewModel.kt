@@ -45,6 +45,12 @@ class SettingsViewModel(
         _uiState.value = _uiState.value.copy(isThemeDialogOpen = false)
     }
 
+    fun setSmartRemindersEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            preferenceRepository.setSmartRemindersEnabled(enabled)
+        }
+    }
+
     fun updateDisplayName(name: String) {
         viewModelScope.launch {
             preferenceRepository.setDisplayName(name)

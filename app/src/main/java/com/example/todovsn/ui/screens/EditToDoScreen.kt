@@ -42,6 +42,7 @@ fun ToDoEditScreen(
                     navigateBack()
                 }
             },
+            onBackClick = navigateBack,
             mode = TaskScreenMode.EDIT,
             modifier = Modifier
                 .padding(innerPadding)

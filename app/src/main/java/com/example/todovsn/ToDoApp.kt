@@ -1,12 +1,16 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 package com.example.todovsn
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -22,19 +26,27 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.todovsn.ui.navigation.ToDoNavHost
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.todovsn.ui.screens.AddToDoDestination
+import com.example.todovsn.ui.theme.TasksTheme
+
+val DeepSeaNavBar = Color(0xFF232A54)
 
 sealed class BottomNavItem(val route: String, val icon: Int, val label: String) {
-    object Home : BottomNavItem("home", R.drawable.notes, "Home")
-    object Profile : BottomNavItem("profile", R.drawable.profile, "Profile")
+    object Home : BottomNavItem("home", R.drawable.notes, "Tasks")
+    object Focus: BottomNavItem("focus", R.drawable.restart_alt, "Focus")
     object Settings : BottomNavItem("settings", R.drawable.settings, "Settings")
+    object Profile : BottomNavItem("profile", R.drawable.profile, "Profile")
 }
 
 @Composable
@@ -43,7 +55,32 @@ fun ToDoApp(
 ){
     Scaffold(
         bottomBar = {
-            ToDoBottomNavigation(navController = navController)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding(),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                ToDoBottomNavigation(navController = navController)
+                
+                // Floating FAB elevated above the bar
+                FloatingActionButton(
+                    onClick = { navController.navigate(AddToDoDestination.route) },
+                    shape = CircleShape,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White,
+                    elevation = FloatingActionButtonDefaults.elevation(8.dp),
+                    modifier = Modifier
+                        .offset(y = (-44).dp) // Adjusted to sit perfectly above the bar
+                        .size(64.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.add),
+                        contentDescription = "Add Task",
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
         }
     ) { innerPadding ->
         ToDoNavHost(
@@ -60,23 +97,19 @@ fun ToDoBottomNavigation(
 ) {
     val items = listOf(
         BottomNavItem.Home,
-        BottomNavItem.Profile,
-        BottomNavItem.Settings
+        BottomNavItem.Focus,
+        BottomNavItem.Settings,
+        BottomNavItem.Profile
     )
 
     Surface(
         modifier = modifier
-            .navigationBarsPadding()
-            .padding(horizontal = 12.dp, vertical = 12.dp)
+            .padding(horizontal = 16.dp, vertical = 20.dp)
             .fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
-        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(24.dp),
+        color = DeepSeaNavBar,
         tonalElevation = 8.dp,
-        shadowElevation = 16.dp,
-        border = androidx.compose.foundation.BorderStroke(
-            1.5.dp, 
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-        )
+        shadowElevation = 16.dp
     ) {
         NavigationBar(
             containerColor = Color.Transparent,
@@ -86,22 +119,27 @@ fun ToDoBottomNavigation(
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
-            items.forEach { item ->
+            items.forEachIndexed { index, item ->
                 val selected = currentRoute == item.route
+                
+                // Add spacer to center FAB after the first two items
+                if (index == 2) {
+                    Spacer(modifier = Modifier.weight(0.4f))
+                }
+
                 NavigationBarItem(
                     icon = { 
                         Icon(
                             painter = painterResource(item.icon), 
                             contentDescription = item.label,
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(24.dp)
                         ) 
                     },
                     label = { 
                         Text(
                             text = item.label, 
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = if (selected) FontWeight.ExtraBold else FontWeight.SemiBold,
-                            color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
                         ) 
                     },
                     selected = selected,
@@ -118,11 +156,23 @@ fun ToDoBottomNavigation(
                     },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
+                        unselectedIconColor = Color.White.copy(alpha = 0.6f),
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedTextColor = Color.White.copy(alpha = 0.6f),
+                        indicatorColor = Color.Transparent
                     )
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+private fun NavBarPreview(){
+    TasksTheme(){
+        ToDoBottomNavigation(
+            navController = rememberNavController(),
+        )
     }
 }

@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Tasks</string>
     <string name="add_screen">Add Task</string>
+    <string name="focus">Focus </string>
     <string name="edit_screen">Edit Task</string>
     <string name="info">Tasks App Info</string>
     <string name="settings">Settings</string>

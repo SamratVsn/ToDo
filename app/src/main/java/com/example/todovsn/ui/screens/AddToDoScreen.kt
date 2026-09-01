@@ -2,45 +2,45 @@ package com.example.todovsn.ui.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
 import com.example.todovsn.ui.AppViewModelProvider
@@ -76,6 +76,7 @@ fun AddToDoScreen(
                     navigateBack()
                 }
             },
+            onBackClick = navigateBack,
             mode = mode,
             modifier = Modifier
                 .padding(innerPadding)
@@ -85,13 +86,13 @@ fun AddToDoScreen(
     }
 }
 
-
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddToDoBody(
     toDoUiState: ToDoUiState,
     onToDoValueChange: (ToDoDetails) -> Unit,
     onSaveClick: () -> Unit,
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     mode: TaskScreenMode,
 ) {
@@ -99,17 +100,25 @@ fun AddToDoBody(
         modifier = modifier
             .padding(horizontal = 24.dp, vertical = 24.dp)
             .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(32.dp)
+        verticalArrangement = Arrangement.spacedBy(40.dp)
     ) {
-        // Header
-        Text(
-            text = when (mode) {
-                TaskScreenMode.ADD -> "New Task"
-                TaskScreenMode.EDIT -> "Edit Task"
-            },
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
-        )
+        // Simple Back Button
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier
+                .size(40.dp)
+                .background(
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    CircleShape
+                )
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.arrow_back),
+                contentDescription = "Back",
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
 
         ToDoInputForm(
             toDoDetails = toDoUiState.toDoDetails,
@@ -117,19 +126,19 @@ fun AddToDoBody(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.weight(0.1f))
 
         Button(
             onClick = onSaveClick,
             enabled = toDoUiState.isEntryValid,
-            shape = RoundedCornerShape(16.dp),
+            shape = CircleShape,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
+                .height(64.dp)
         ) {
             Text(
                 text = when (mode) {
-                    TaskScreenMode.ADD -> "Add Task"
+                    TaskScreenMode.ADD -> "Create Task"
                     TaskScreenMode.EDIT -> "Save Changes"
                 },
                 style = MaterialTheme.typography.titleMedium,
@@ -148,147 +157,93 @@ private fun ToDoInputForm(
     onValueChange: (ToDoDetails) -> Unit = {},
     enabled: Boolean = true
 ) {
-    val titleMax = 60
-    val descMax = 500
-
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = MaterialTheme.colorScheme.primary,
-        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-        focusedContainerColor = Color.Transparent,
-        unfocusedContainerColor = Color.Transparent,
-        errorBorderColor = Color.Transparent,
-        errorContainerColor = Color.Transparent
-    )
+    val categories = listOf("Study", "Work", "Productive", "Personal", "Important", "Custom")
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
-        // Task Title Section
+        // Floating Title Input
         Column {
             Text(
-                text = "Task title",
+                text = "What's on your mind?",
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
             )
-            OutlinedTextField(
+            Spacer(modifier = Modifier.height(8.dp))
+            BasicTextField(
                 value = toDoDetails.title,
-                onValueChange = {
-                    if (it.length <= titleMax) onValueChange(toDoDetails.copy(title = it))
-                },
-                placeholder = { Text("e.g. Complete Movie App README") },
-                singleLine = true,
-                enabled = enabled,
-                isError = toDoDetails.title.isNotEmpty() && toDoDetails.title.trim().length < 3,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                    errorBorderColor = Color.Transparent,
-                    errorContainerColor = Color.Transparent
+                onValueChange = { onValueChange(toDoDetails.copy(title = it)) },
+                textStyle = TextStyle(
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                decorationBox = { innerTextField ->
+                    if (toDoDetails.title.isEmpty()) {
+                        Text(
+                            text = "Task Title",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        )
+                    }
+                    innerTextField()
+                },
                 modifier = Modifier.fillMaxWidth()
             )
-            HorizontalDivider(
-                thickness = 1.dp,
-                color = if (toDoDetails.title.isNotEmpty() && toDoDetails.title.trim().length < 3)
-                    MaterialTheme.colorScheme.error
-                else
-                    MaterialTheme.colorScheme.outlineVariant
-            )
-            if (toDoDetails.title.isNotEmpty() && toDoDetails.title.trim().length < 3) {
-                Text(
-                    text = "Min 3 characters",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
         }
 
-        // Category Section
+        // Category FlowRow
         Column {
             Text(
                 text = "Category",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            var expanded by remember { mutableStateOf(false) }
-            val categories = listOf("Study", "Development", "Routine", "Extra", "Productive", "Important")
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .clickable { expanded = true }
-                    .background(
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        RoundedCornerShape(12.dp)
-                    )
-                    .padding(16.dp)
+            Spacer(modifier = Modifier.height(12.dp))
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = toDoDetails.category,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Medium
+                categories.forEach { category ->
+                    val selected = toDoDetails.category == category
+                    AssistChip(
+                        onClick = { onValueChange(toDoDetails.copy(category = category)) },
+                        label = { Text(category) },
+                        shape = CircleShape,
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            labelColor = if (selected) Color.White else MaterialTheme.colorScheme.onSurface,
+                        ),
+                        border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                     )
-                    Icon(
-                        painter = painterResource(android.R.drawable.arrow_down_float),
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.fillMaxWidth(0.85f)
-                ) {
-                    categories.forEach { category ->
-                        DropdownMenuItem(
-                            text = { Text(category) },
-                            onClick = {
-                                onValueChange(toDoDetails.copy(category = category))
-                                expanded = false
-                            }
-                        )
-                    }
                 }
             }
         }
 
-        // Description Section
         Column {
             Text(
-                text = "Description",
+                text = "Notes",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             OutlinedTextField(
                 value = toDoDetails.description,
-                onValueChange = {
-                    if (it.length <= descMax) onValueChange(toDoDetails.copy(description = it))
-                },
-                placeholder = { Text("What needs to be done?") },
-                minLines = 3,
-                maxLines = 5,
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent,
-                ),
+                onValueChange = { onValueChange(toDoDetails.copy(description = it)) },
+                placeholder = { Text("Add details for the task...") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
+                    .heightIn(min = 180.dp), // Increased minimum height
+                shape = RoundedCornerShape(24.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                ),
+                maxLines = 10 // Allow more lines before internal scrolling
             )
         }
     }

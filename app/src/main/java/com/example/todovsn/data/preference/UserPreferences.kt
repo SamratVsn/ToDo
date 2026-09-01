@@ -10,4 +10,5 @@ data class UserPreferences(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val displayName: String = "Guest",
     val totalTasksCreated: Int = 0,
+    val smartRemindersEnabled: Boolean = false,
 )

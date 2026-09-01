@@ -11,6 +11,8 @@ import com.example.todovsn.ui.home.HomeDestination
 import com.example.todovsn.ui.home.ToDoScreen
 import com.example.todovsn.ui.screens.AddToDoDestination
 import com.example.todovsn.ui.screens.AddToDoScreen
+import com.example.todovsn.ui.screens.FocusDestination
+import com.example.todovsn.ui.screens.FocusScreen
 import com.example.todovsn.ui.screens.SettingsDestination
 import com.example.todovsn.ui.screens.SettingsScreen
 import com.example.todovsn.ui.screens.ProfileDestination
@@ -80,6 +82,10 @@ fun ToDoNavHost(
 
         composable(route = SettingsDestination.route) {
             SettingsScreen()
+        }
+
+        composable(route = FocusDestination.route) {
+            FocusScreen()
         }
 
         composable(route = ProfileDestination.route) {

@@ -3,6 +3,7 @@ package com.example.todovsn.data.preference
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -31,7 +32,13 @@ class PreferenceRepository(private val context: Context) {
                 runCatching { ThemeMode.valueOf(it) }.getOrDefault(ThemeMode.SYSTEM)
             } ?: ThemeMode.SYSTEM
             val totalCreated = prefs[Keys.TOTAL_TASKS_CREATED] ?: 0
-            UserPreferences(themeMode = theme, displayName = name, totalTasksCreated = totalCreated)
+            val smartReminders = prefs[Keys.SMART_REMINDERS_ENABLED] ?: false
+            UserPreferences(
+                themeMode = theme, 
+                displayName = name, 
+                totalTasksCreated = totalCreated,
+                smartRemindersEnabled = smartReminders
+            )
     }
 
     suspend fun setThemeMode(mode: ThemeMode) {
@@ -40,6 +47,10 @@ class PreferenceRepository(private val context: Context) {
 
     suspend fun setDisplayName(name: String) {
         context.dataStore.edit { it[Keys.DISPLAY_NAME] = name.trim().ifBlank { "Guest" } }
+    }
+
+    suspend fun setSmartRemindersEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.SMART_REMINDERS_ENABLED] = enabled }
     }
 
     suspend fun incrementTotalTasksCreated() {
@@ -61,5 +72,6 @@ class PreferenceRepository(private val context: Context) {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DISPLAY_NAME = stringPreferencesKey("display_name")
         val TOTAL_TASKS_CREATED = intPreferencesKey("total_tasks_created")
+        val SMART_REMINDERS_ENABLED = booleanPreferencesKey("smart_reminders_enabled")
     }
 }

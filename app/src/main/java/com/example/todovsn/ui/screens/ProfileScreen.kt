@@ -2,6 +2,7 @@ package com.example.todovsn.ui.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -23,8 +24,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -65,12 +64,9 @@ object ProfileDestination : NavDestination {
 }
 
 private val bannerGradients = listOf(
-    listOf(Color(0xFFC7B8F5), Color(0xFF25038A)),
-    listOf(Color(0xFFA0E9E0), Color(0xFF5FB3A3)),
-    listOf(Color(0xFFFFC9B0), Color(0xFFE2836B)),
-    listOf(Color(0xFFB8D8F0), Color(0xFF6C93C4)),
-    listOf(Color(0xFFF5B8D6), Color(0xFFC46C93)),
-    listOf(Color(0xFFD8E4A0), Color(0xFF93B35F)),
+    listOf(Color(0xFF7C8CF0), Color(0xFF161B3D)),
+    listOf(Color(0xFF8D96C4), Color(0xFF2E3566)),
+    listOf(Color(0xFF3D467D), Color(0xFF161B3D)),
 )
 
 private val motivationalBios = listOf(
@@ -98,16 +94,17 @@ fun ProfileScreen(
     }
     val bio = rememberSaveable { motivationalBios.random() }
 
-    Scaffold(modifier = modifier) { innerPadding ->
+    Scaffold(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(scrollState)
         ) {
-            ProfileBanner(
-                bannerColors = bannerColors
-            )
+            ProfileBanner(bannerColors = bannerColors)
 
             Column(
                 modifier = Modifier
@@ -116,12 +113,16 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = uiState.displayName,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = uiState.displayName,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
                 Text(
                     text = bio,
                     style = MaterialTheme.typography.bodyMedium,
@@ -137,10 +138,9 @@ fun ProfileScreen(
                     today = uiState.tasksToday
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(32.dp))
 
                 PersonalDetailsCard(
-                    modifier = Modifier.fillMaxWidth(),
                     currentTheme = uiState.currentTheme
                 )
 
@@ -159,9 +159,7 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun ProfileBanner(
-    bannerColors: List<Color>
-) {
+private fun ProfileBanner(bannerColors: List<Color>) {
     val bannerHeight = 180.dp
     val avatarSize = 120.dp
 
@@ -176,9 +174,9 @@ private fun ProfileBanner(
             ) {
                 Text(
                     text = "PROFILE",
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black.copy(alpha = 0.4f),
+                    color = Color.White.copy(alpha = 0.4f),
                     letterSpacing = 4.sp,
                     modifier = Modifier.statusBarsPadding()
                 )
@@ -195,7 +193,7 @@ private fun ProfileBanner(
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 4.dp,
             shadowElevation = 8.dp,
-            border = androidx.compose.foundation.BorderStroke(4.dp, MaterialTheme.colorScheme.surface)
+            border = BorderStroke(4.dp, MaterialTheme.colorScheme.background)
         ) {
             Image(
                 painter = painterResource(R.drawable.photo),
@@ -247,18 +245,20 @@ private fun StatCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = containerColor,
             contentColor = contentColor
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, contentColor.copy(alpha = 0.1f))
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(vertical = 20.dp, horizontal = 8.dp)
                 .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = value,
@@ -266,11 +266,12 @@ private fun StatCard(
                 fontWeight = FontWeight.Bold,
                 color = contentColor
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium,
-                color = contentColor.copy(alpha = 0.7f),
+                color = contentColor.copy(alpha = 0.8f),
                 textAlign = TextAlign.Center
             )
         }
@@ -284,14 +285,12 @@ private fun PersonalDetailsCard(
 ) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+        shape = RoundedCornerShape(32.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             DetailRow(icon = R.drawable.settings, label = "Current Theme", value = currentTheme)
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
-            DetailRow(icon = R.drawable.add, label = "Location", value = "Kathmandu, Nepal")
             HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
             DetailRow(icon = R.drawable.schedule, label = "Member Since", value = "August 2026")
         }
@@ -306,15 +305,15 @@ private fun DetailRow(icon: Int, label: String, value: String) {
     ) {
         Box(
             modifier = Modifier
-                .size(36.dp)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), CircleShape),
+                .size(40.dp)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = painterResource(icon),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(18.dp)
+                modifier = Modifier.size(20.dp)
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
@@ -326,7 +325,7 @@ private fun DetailRow(icon: Int, label: String, value: String) {
             )
             Text(
                 text = value,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -340,7 +339,7 @@ private fun HorizontalDivider(modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .height(1.dp)
-            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
     )
 }
 
