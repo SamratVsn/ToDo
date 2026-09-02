@@ -126,7 +126,6 @@ fun AddToDoBody(
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.weight(0.1f))
 
         Button(
             onClick = onSaveClick,

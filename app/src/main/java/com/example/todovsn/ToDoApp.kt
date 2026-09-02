@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.todovsn.ui.home.HomeDestination
 import com.example.todovsn.ui.screens.AddToDoDestination
 import com.example.todovsn.ui.theme.TasksTheme
 
@@ -44,7 +45,7 @@ val DeepSeaNavBar = Color(0xFF232A54)
 
 sealed class BottomNavItem(val route: String, val icon: Int, val label: String) {
     object Home : BottomNavItem("home", R.drawable.notes, "Tasks")
-    object Focus: BottomNavItem("focus", R.drawable.restart_alt, "Focus")
+    object Focus: BottomNavItem("focus", R.drawable.focus, "Focus")
     object Settings : BottomNavItem("settings", R.drawable.settings, "Settings")
     object Profile : BottomNavItem("profile", R.drawable.profile, "Profile")
 }
@@ -53,39 +54,51 @@ sealed class BottomNavItem(val route: String, val icon: Int, val label: String) 
 fun ToDoApp(
     navController: NavHostController = rememberNavController()
 ){
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route ?: HomeDestination.route
+
+    val showBottomBar = currentRoute in listOf(
+        BottomNavItem.Home.route,
+        BottomNavItem.Focus.route,
+        BottomNavItem.Settings.route,
+        BottomNavItem.Profile.route
+    )
+
     Scaffold(
         bottomBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding(),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                ToDoBottomNavigation(navController = navController)
-                
-                // Floating FAB elevated above the bar
-                FloatingActionButton(
-                    onClick = { navController.navigate(AddToDoDestination.route) },
-                    shape = CircleShape,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White,
-                    elevation = FloatingActionButtonDefaults.elevation(8.dp),
+            if (showBottomBar) {
+                Box(
                     modifier = Modifier
-                        .offset(y = (-44).dp) // Adjusted to sit perfectly above the bar
-                        .size(64.dp)
+                        .fillMaxWidth()
+                        .navigationBarsPadding(),
+                    contentAlignment = Alignment.BottomCenter
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.add),
-                        contentDescription = "Add Task",
-                        modifier = Modifier.size(32.dp)
-                    )
+                    ToDoBottomNavigation(navController = navController)
+                    
+                    // Floating FAB elevated above the bar
+                    FloatingActionButton(
+                        onClick = { navController.navigate(AddToDoDestination.route) },
+                        shape = CircleShape,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White,
+                        elevation = FloatingActionButtonDefaults.elevation(8.dp),
+                        modifier = Modifier
+                            .offset(y = (-44).dp) // Adjusted to sit perfectly above the bar
+                            .size(64.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.add),
+                            contentDescription = "Add Task",
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
             }
         }
     ) { innerPadding ->
         ToDoNavHost(
             navController = navController,
-            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
+            modifier = Modifier.padding(bottom = if (showBottomBar) innerPadding.calculateBottomPadding() else 0.dp)
         )
     }
 }

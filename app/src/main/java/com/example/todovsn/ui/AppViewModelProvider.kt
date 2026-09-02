@@ -10,6 +10,7 @@ import com.example.todovsn.ui.home.HomeViewModel
 import com.example.todovsn.ui.screens.AddViewModel
 import com.example.todovsn.ui.screens.DetailsViewModel
 import com.example.todovsn.ui.screens.EditViewModel
+import com.example.todovsn.ui.screens.FocusViewModel
 import com.example.todovsn.ui.screens.ProfileViewModel
 import com.example.todovsn.ui.screens.SettingsViewModel
 
@@ -28,6 +29,10 @@ object AppViewModelProvider {
                 toDoApplication().container.userPreferencesRepository,
                 toDoApplication().container.toDoRepository
             )
+        }
+
+        initializer {
+            FocusViewModel()
         }
 
         initializer {
