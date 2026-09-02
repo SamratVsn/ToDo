@@ -1,55 +1,54 @@
 # Tasks 🚀
 
-Tasks is a lightweight, modern task management application built with Jetpack Compose and Material 3. It provides a seamless experience for organizing daily tasks with a focus on simplicity, performance, and a polished user interface.
+Tasks is a sleek, modern, and productivity-focused task management application built with **Jetpack Compose** and **Material 3**. It's designed to help you stay organized, focused, and achieve your goals with a high-end user experience.
 
 ---
 
 ## Screenshots
 
-| Home | Add Task | Edit Task | Details | About | Tasks Screen |
-|------|----------|-----------|---------|-------|
-| ![](Empty.png) | ![](Add.png) | ![](Edit.png) | ![](Details.png) | ![](Info.png) |  ![](Home.png) |
+| Home | Focus | Profile | Settings | Add Task |
+|------|-------|---------|----------|----------|
+| ![](Home.png) | ![](Empty.png) | ![](Info.png) | ![](Edit.png) | ![](Add.png) |
 
 ---
 
-## Features ✨
+## Key Features ✨
 
-* **Manage Tasks**: Effortlessly add, edit, and delete tasks.
-* **Mark Completion**: Toggle task status between pending and completed.
-* **Swipe to Delete**: Quick and intuitive swipe-to-dismiss gesture on the home screen.
-* **Task Details**: View detailed information about each task, including descriptions and status.
-* **Persistent Storage**: Uses Room Database to ensure your tasks are saved locally.
-* **Material 3 UI**: Modern, clean design following the latest Material Design 3 guidelines.
-* **Info/About Screen**: Dedicated section with developer information and tech stack details.
-* **Empty State Handling**: Elegant placeholders when no tasks are present.
-* **Responsive Navigation**: Type-safe navigation patterns between screens.
-* **Adaptive Launcher Icon**: Professional icon support for various Android device themes.
+*   **Task Management**: Effortlessly create, edit, and delete tasks with a clean UI.
+*   **Focus Sessions**: Integrated Pomodoro-style timer with customizable durations (15m, 25m, 45m, 60m) to boost productivity.
+*   **Personalized Profile**: Track your progress with real-time statistics (Total Tasks, Completed, and Today's Wins) along with motivational bios.
+*   **Dynamic Theming**: Support for System Default, Light Mode, and a specialized "Deep Sea" Dark Mode.
+*   **Custom Navigation**: A unique floating navigation bar with an elevated Floating Action Button (FAB) for quick task entry.
+*   **Smart Reminders**: Toggleable notifications to help you stay on track.
+*   **Data Management**: Robust options to reset your progress or securely delete all data.
+*   **Persistent Storage**: Powered by Room Database for local task persistence and DataStore for user preferences.
+*   **Polished UI/UX**: Features custom animations, gradient backgrounds, and refined Material 3 components.
 
 ---
 
 ## Tech Stack 🛠
 
-* **Kotlin**: Primary programming language.
-* **Jetpack Compose**: Modern declarative UI toolkit.
-* **Material 3**: Latest design system for Android.
-* **Navigation Compose**: Routing and navigation management.
-* **Room Database**: Local data persistence layer.
-* **ViewModel**: UI state management following lifecycle awareness.
-* **StateFlow & mutableStateOf**: Reactive state handling for UI updates.
-* **Coroutines**: Asynchronous programming for database operations.
-* **KSP (Kotlin Symbol Processing)**: Faster annotation processing for Room.
-* **AndroidX Libraries**: Core components for modern Android development.
+*   **Kotlin**: Primary language for modern Android development.
+*   **Jetpack Compose**: Declarative UI toolkit for building beautiful native interfaces.
+*   **Material 3**: The latest evolution of Material Design.
+*   **Room Database**: Local SQLite abstraction for task persistence.
+*   **DataStore (Preferences)**: Modern way to store simple user settings.
+*   **Navigation Compose**: Type-safe routing between screens.
+*   **Coroutines & Flow**: Reactive programming for smooth data handling.
+*   **ViewModel**: Lifecycle-aware state management.
+*   **SplashScreen API**: Optimized and professional app launch experience.
+*   **Hilt/AppContainer**: Efficient dependency injection/management.
 
 ---
 
 ## Architecture 🏛️
 
-The project follows the **MVVM (Model-View-ViewModel)** architectural pattern and the **Repository Pattern** to ensure a clean separation of concerns:
+The project adheres to the **MVVM (Model-View-ViewModel)** architectural pattern combined with the **Repository Pattern** for a clean separation of concerns:
 
-* **Presentation Layer**: Jetpack Compose screens and ViewModels.
-* **Domain Layer**: Repository interfaces for data abstraction.
-* **Data Layer**: Room database implementation, DAOs, and entities.
-* **Single Activity Architecture**: Entire navigation handled within a single `MainActivity`.
+*   **Presentation**: UI Screens (Home, Focus, Profile, Settings) and their respective ViewModels.
+*   **Domain**: Business logic and data abstraction through Repositories.
+*   **Data**: Room DAOs, Entities, and Preferences DataStore implementation.
+*   **Navigation**: Centralized `ToDoNavHost` managing the app flow within a Single Activity.
 
 ---
 
@@ -57,71 +56,49 @@ The project follows the **MVVM (Model-View-ViewModel)** architectural pattern an
 
 ```text
 app/
- ├── data/                # Data entities, DAOs, Database, and Repository
+ ├── data/                # Database entities, DAOs, Repositories, and DataStore
  ├── ui/
- │   ├── home/            # Home screen and HomeViewModel
- │   ├── screens/         # Add, Edit, Details, and Info screens/ViewModels
- │   ├── navigation/      # Navigation graph and destination definitions
- │   └── theme/           # Color schemes, Typography, and Shapes (Material 3)
- ├── ToDoApp.kt           # Top-level App Composables
- └── MainActivity.kt      # Entry point of the application
+ │   ├── home/            # Home screen logic and UI
+ │   ├── screens/         # Focus, Profile, Settings, Add/Edit screens
+ │   ├── navigation/      # NavHost and Destination definitions
+ │   └── theme/           # Color schemes (Deep Sea), Typography, and Shapes
+ ├── ToDoApp.kt           # Custom Floating Navigation & Scaffold setup
+ └── MainActivity.kt      # App entry point with theme & splash support
 ```
 
 ---
 
-## Installation ⚙️
+## Getting Started ⚙️
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/SamratVsn/Todovsn.git
-   ```
-2. **Open in Android Studio**:
-   Launch Android Studio and select `Open` -> Navigate to the cloned directory.
-3. **Sync Gradle**:
-   Wait for the IDE to finish syncing the project dependencies.
-4. **Run the app**:
-   Connect an Android device or start an emulator and click the `Run` icon.
+1.  **Clone the repo**:
+    ```bash
+    git clone https://github.com/SamratVsn/Todovsn.git
+    ```
+2.  **Open in Android Studio**:
+    Select `Open` and navigate to the project folder.
+3.  **Sync & Build**:
+    Wait for Gradle to sync dependencies.
+4.  **Run**:
+    Click the `Run` button to deploy to your device or emulator.
 
 ---
 
 ## Requirements 📋
 
-* **Minimum SDK**: 24 (Android 7.0)
-* **Target SDK**: 37 (Android 15)
-* **Compile SDK**: 37
-* **Kotlin Version**: 2.2.10
-* **Gradle Version**: 9.3.1 (AGP)
+*   **Min SDK**: 24 (Android 7.0)
+*   **Target SDK**: 37 (Android 15)
+*   **Kotlin**: 2.2.10
+*   **Gradle**: 9.3.1
 
 ---
 
-## Libraries Used 📚
+## Future Roadmap 🚀
 
-| Library | Purpose |
-| ------- | ------- |
-| `androidx.compose.ui` | UI framework components |
-| `androidx.compose.material3` | Material Design 3 components |
-| `androidx.navigation:navigation-compose` | In-app navigation |
-| `androidx.room3` | SQLite object mapping for persistence |
-| `androidx.lifecycle:lifecycle-viewmodel-compose` | ViewModel integration with Compose |
-| `androidx.activity:activity-compose` | Entry point for Compose in Activity |
-| `kotlinx.coroutines` | Asynchronous task handling |
-
----
-
-## Future Improvements 🚀
-
-* **Search Functionality**: Quickly find tasks by title or content.
-* **Task Categories**: Group tasks into Work, Personal, or custom labels.
-* **Notifications**: Set reminders and due dates for important tasks.
-* **Cloud Sync**: Integrate Firebase or a backend for multi-device sync.
-* **Priority Levels**: Visually distinguish high-priority tasks.
-* **Dark/Light Mode Toggle**: Manual override for system theme.
-
----
-
-## License 📄
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+*   **Search & Filter**: Quickly locate tasks by category or priority.
+*   **Cloud Sync**: Firebase integration for multi-device synchronization.
+*   **Custom Tags**: Create personal labels for better task organization.
+*   **Interactive Widgets**: Access your tasks directly from the home screen.
+*   **Detailed Analytics**: Visual charts for weekly and monthly productivity trends.
 
 ---
 
@@ -129,6 +106,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Samrat Parajuli**
 
-* **Portfolio**: [samratparajuli0.com.np](https://www.samratparajuli0.com.np/)
-* **GitHub**: [@SamratVsn](https://github.com/SamratVsn)
-* **LinkedIn**: [Samrat Parajuli](https://linkedin.com/in/samratvsn)
+*   **GitHub**: [@SamratVsn](https://github.com/SamratVsn)
+*   **Portfolio**: [samratparajuli0.com.np](https://www.samratparajuli0.com.np/)
+*   **LinkedIn**: [Samrat Parajuli](https://linkedin.com/in/samratvsn)
+
+---
+
+## License 📄
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
