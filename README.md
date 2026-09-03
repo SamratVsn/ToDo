@@ -6,20 +6,26 @@ Tasks is a sleek, modern, and productivity-focused task management application b
 
 ## Screenshots
 
-| Home | Focus | Pr<br/>ofile | Settings | Add Task | Task Details |
-|------|-------|---------|----------|----------|----------|
-| ![](Screenshots/Home.png) | ![](Screenshots/Focus.png) | ![](Screenshots/Profile.png) | ![](Screenshots/Settings.png) | ![](Screenshots/Add.png) | ![](Screenshots/Details.png) |
+| Home | Focus | Categories | Profile |
+|------|-------|------------|---------|
+| ![](Screenshots/Home.png) | ![](Screenshots/Focus.png) | ![](Screenshots/Categories.png) | ![](Screenshots/Profile.png) |
+
+| Settings | Add Task | Task Details |
+|----------|----------|--------------|
+| ![](Screenshots/Settings.png) | ![](Screenshots/Add.png) | ![](Screenshots/Details.png) |
 
 ---
 
 ## Key Features ✨
 
 *   **Task Management**: Effortlessly create, edit, and delete tasks with a clean UI.
-*   **Focus Sessions**: Integrated Pomodoro-style timer with customizable durations (15m, 25m, 45m, 60m) to boost productivity.
-*   **Personalized Profile**: Track your progress with real-time statistics (Total Tasks, Completed, and Today's Wins) along with motivational bios.
+*   **Search & Filter**: Quickly locate tasks with global search and dedicated category-based filtering.
+*   **Focus Sessions**: Integrated Pomodoro-style timer with customizable durations (15m, 25m, 45m, 60m) and "beefy" UI for better visibility.
+*   **Personalized Profile**: Track your progress with real-time statistics (All-time Created, Completed, and Today's Wins) along with motivational bios.
 *   **Dynamic Theming**: Support for System Default, Light Mode, and a specialized "Deep Sea" Dark Mode.
 *   **Custom Navigation**: A unique floating navigation bar with an elevated Floating Action Button (FAB) for quick task entry.
 *   **Smart Reminders**: Toggleable notifications to help you stay on track.
+*   **Category Management**: Pre-populated default categories (Study, Work, etc.) with the ability to add and safely delete custom ones.
 *   **Data Management**: Robust options to reset your progress or securely delete all data.
 *   **Persistent Storage**: Powered by Room Database for local task persistence and DataStore for user preferences.
 *   **Polished UI/UX**: Features custom animations, gradient backgrounds, and refined Material 3 components.
@@ -45,7 +51,7 @@ Tasks is a sleek, modern, and productivity-focused task management application b
 
 The project adheres to the **MVVM (Model-View-ViewModel)** architectural pattern combined with the **Repository Pattern** for a clean separation of concerns:
 
-*   **Presentation**: UI Screens (Home, Focus, Profile, Settings) and their respective ViewModels.
+*   **Presentation**: UI Screens (Home, Focus, Category, Profile, Settings) and their respective ViewModels.
 *   **Domain**: Business logic and data abstraction through Repositories.
 *   **Data**: Room DAOs, Entities, and Preferences DataStore implementation.
 *   **Navigation**: Centralized `ToDoNavHost` managing the app flow within a Single Activity.
@@ -59,7 +65,7 @@ app/
  ├── data/                # Database entities, DAOs, Repositories, and DataStore
  ├── ui/
  │   ├── home/            # Home screen logic and UI
- │   ├── screens/         # Focus, Profile, Settings, Add/Edit screens
+ │   ├── screens/         # Focus, Profile, Settings, Category, Add/Edit screens
  │   ├── navigation/      # NavHost and Destination definitions
  │   └── theme/           # Color schemes (Deep Sea), Typography, and Shapes
  ├── ToDoApp.kt           # Custom Floating Navigation & Scaffold setup
@@ -94,7 +100,6 @@ app/
 
 ## Future Roadmap 🚀
 
-*   **Search & Filter**: Quickly locate tasks by category or priority.
 *   **Cloud Sync**: Firebase integration for multi-device synchronization.
 *   **Custom Tags**: Create personal labels for better task organization.
 *   **Interactive Widgets**: Access your tasks directly from the home screen.
