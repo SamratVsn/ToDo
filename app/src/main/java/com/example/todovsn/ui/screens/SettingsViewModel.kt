@@ -2,6 +2,7 @@ package com.example.todovsn.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.todovsn.data.Category
 import com.example.todovsn.data.ToDoRepository
 import com.example.todovsn.data.preference.PreferenceRepository
 import com.example.todovsn.data.preference.ThemeMode
@@ -15,10 +16,12 @@ import kotlinx.coroutines.launch
 
 data class SettingsUiState(
     val preferences: UserPreferences = UserPreferences(),
+    val categories: List<Category> = listOf(),
     val isNameDialogOpen: Boolean = false,
     val isThemeDialogOpen: Boolean = false,
     val isDeleteConfirmationOpen: Boolean = false,
-    val isResetConfirmationOpen: Boolean = false
+    val isResetConfirmationOpen: Boolean = false,
+    val isCategoryManagementOpen: Boolean = false
 )
 
 class SettingsViewModel(
@@ -29,9 +32,10 @@ class SettingsViewModel(
     
     val uiState: StateFlow<SettingsUiState> = combine(
         preferenceRepository.preferences,
+        toDoRepository.getAllCategoriesStream(),
         _uiState
-    ) { prefs, state ->
-        state.copy(preferences = prefs)
+    ) { prefs, categories, state ->
+        state.copy(preferences = prefs, categories = categories)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -73,6 +77,19 @@ class SettingsViewModel(
         _uiState.value = _uiState.value.copy(isDeleteConfirmationOpen = false)
     }
 
+    fun addCategory(name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            toDoRepository.insertCategory(Category(name))
+        }
+    }
+
+    fun deleteCategory(category: Category) {
+        viewModelScope.launch {
+            toDoRepository.deleteCategory(category)
+        }
+    }
+
     fun showNameDialog(show: Boolean) {
         _uiState.value = _uiState.value.copy(isNameDialogOpen = show)
     }
@@ -87,5 +104,9 @@ class SettingsViewModel(
 
     fun showResetConfirmation(show: Boolean) {
         _uiState.value = _uiState.value.copy(isResetConfirmationOpen = show)
+    }
+
+    fun showCategoryManagement(show: Boolean) {
+        _uiState.value = _uiState.value.copy(isCategoryManagementOpen = show)
     }
 }

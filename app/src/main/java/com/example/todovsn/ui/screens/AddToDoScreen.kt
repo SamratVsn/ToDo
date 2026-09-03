@@ -18,6 +18,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -29,8 +32,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,7 +65,6 @@ enum class TaskScreenMode {
     EDIT
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddToDoScreen(
@@ -66,14 +73,23 @@ fun AddToDoScreen(
     viewModel: AddViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val coroutineScope = rememberCoroutineScope()
-    Scaffold { innerPadding ->
+    val snackbarHostState = remember { SnackbarHostState() }
+    val categories by viewModel.categories.collectAsState()
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { innerPadding ->
         AddToDoBody(
             toDoUiState = viewModel.toDoUiState,
+            categories = categories,
             onToDoValueChange = viewModel::updateUiState,
             onSaveClick = {
                 coroutineScope.launch {
-                    viewModel.saveToDo()
-                    navigateBack()
+                    if (viewModel.saveToDo()) {
+                        navigateBack()
+                    } else {
+                        snackbarHostState.showSnackbar("Failed to save task. Please check your input.")
+                    }
                 }
             },
             onBackClick = navigateBack,
@@ -86,10 +102,10 @@ fun AddToDoScreen(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddToDoBody(
     toDoUiState: ToDoUiState,
+    categories: List<String>,
     onToDoValueChange: (ToDoDetails) -> Unit,
     onSaveClick: () -> Unit,
     onBackClick: () -> Unit,
@@ -98,7 +114,7 @@ fun AddToDoBody(
 ) {
     Column(
         modifier = modifier
-            .padding(horizontal = 24.dp, vertical = 24.dp)
+            .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 24.dp)
             .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(40.dp)
     ) {
@@ -122,6 +138,7 @@ fun AddToDoBody(
 
         ToDoInputForm(
             toDoDetails = toDoUiState.toDoDetails,
+            categories = categories,
             onValueChange = onToDoValueChange,
             modifier = Modifier.fillMaxWidth()
         )
@@ -147,17 +164,15 @@ fun AddToDoBody(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ToDoInputForm(
     toDoDetails: ToDoDetails,
+    categories: List<String>,
     modifier: Modifier = Modifier,
     onValueChange: (ToDoDetails) -> Unit = {},
     enabled: Boolean = true
 ) {
-    val categories = listOf("Study", "Work", "Productive", "Personal", "Important", "Custom")
-
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(32.dp)
@@ -179,6 +194,11 @@ private fun ToDoInputForm(
                     color = MaterialTheme.colorScheme.onSurface
                 ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Next
+                ),
                 decorationBox = { innerTextField ->
                     if (toDoDetails.title.isEmpty()) {
                         Text(

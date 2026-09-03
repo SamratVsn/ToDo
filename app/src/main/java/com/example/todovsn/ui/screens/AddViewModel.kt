@@ -4,9 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.todovsn.data.ToDoRepository
 import com.example.todovsn.data.ToDoItem
 import com.example.todovsn.data.preference.PreferenceRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDateTime
 
 class AddViewModel(
@@ -15,6 +20,14 @@ class AddViewModel(
 ) : ViewModel() {
     var toDoUiState by mutableStateOf(ToDoUiState())
         private set
+
+    val categories: StateFlow<List<String>> = toDoRepository.getAllCategoriesStream()
+        .map { it.map { category -> category.name } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = listOf("Study", "Work", "Productive", "Personal", "Important")
+        )
 
     fun updateUiState(toDoDetails: ToDoDetails) {
         toDoUiState =

@@ -16,7 +16,8 @@ class AppDataContainer(private val context: Context) : AppContainer {
      * Implementation for [ToDoRepository]
      */
     override val toDoRepository: ToDoRepository by lazy {
-        OfflineToDoRepository(ToDoDatabase.getDatabase(context).toDoDao())
+        val database = ToDoDatabase.getDatabase(context)
+        OfflineToDoRepository(database.toDoDao(), database.categoryDao())
     }
 
     override val userPreferencesRepository: PreferenceRepository by lazy {

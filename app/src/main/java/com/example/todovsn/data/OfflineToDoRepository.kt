@@ -2,7 +2,10 @@ package com.example.todovsn.data
 
 import kotlinx.coroutines.flow.Flow
 
-class OfflineToDoRepository(private val toDoDao: ToDoDao) : ToDoRepository {
+class OfflineToDoRepository(
+    private val toDoDao: ToDoDao,
+    private val categoryDao: CategoryDao
+) : ToDoRepository {
     override fun getAllToDoStream(): Flow<List<ToDoItem>> = toDoDao.getAllToDos()
 
     override fun getToDoStream(id: Int): Flow<ToDoItem?> = toDoDao.getToDo(id)
@@ -14,4 +17,10 @@ class OfflineToDoRepository(private val toDoDao: ToDoDao) : ToDoRepository {
     override suspend fun updateToDo(item: ToDoItem) = toDoDao.update(item)
 
     override suspend fun deleteAllToDo() = toDoDao.deleteAll()
+
+    override fun getAllCategoriesStream(): Flow<List<Category>> = categoryDao.getAllCategories()
+
+    override suspend fun insertCategory(category: Category) = categoryDao.insert(category)
+
+    override suspend fun deleteCategory(category: Category) = categoryDao.delete(category)
 }

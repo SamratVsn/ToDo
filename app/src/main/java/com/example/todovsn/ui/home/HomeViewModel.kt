@@ -15,6 +15,9 @@ class HomeViewModel(private val toDoRepository: ToDoRepository): ViewModel() {
     companion object {
         private const val TIMEOUT_MILLS = 5_000L
     }
+
+    private var lastDeletedToDo: ToDoItem? = null
+
     val homeUiState : StateFlow<HomeUiState> = toDoRepository.getAllToDoStream().map { HomeUiState(it) }
         .stateIn(
             scope = viewModelScope,
@@ -23,9 +26,19 @@ class HomeViewModel(private val toDoRepository: ToDoRepository): ViewModel() {
         )
 
     fun deleteToDo(toDo: ToDoItem) {
+        lastDeletedToDo = toDo
         viewModelScope.launch {
             toDoRepository.deleteToDo(toDo)
         }
+    }
+
+    fun restoreDeletedToDo() {
+        lastDeletedToDo?.let { toDo ->
+            viewModelScope.launch {
+                toDoRepository.insertToDo(toDo)
+            }
+        }
+        lastDeletedToDo = null
     }
 
     fun toggleCompleted(toDo: ToDoItem) {
@@ -39,4 +52,6 @@ class HomeViewModel(private val toDoRepository: ToDoRepository): ViewModel() {
     }
 }
 
-data class HomeUiState(val toDoList: List<ToDoItem> = listOf())
+data class HomeUiState(
+    val toDoList: List<ToDoItem> = listOf()
+)

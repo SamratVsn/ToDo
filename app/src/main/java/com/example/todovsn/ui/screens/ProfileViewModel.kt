@@ -20,10 +20,10 @@ data class ProfileUiState(
     val totalTasks: Int = 0,
     val tasksDone: Int = 0,
     val tasksToday: Int = 0,
+    val focusSessionsToday: Int = 0,
     val currentTheme: String = "System"
 )
 
-@RequiresApi(Build.VERSION_CODES.O)
 class ProfileViewModel(
     private val preferenceRepository: PreferenceRepository,
     private val toDoRepository: ToDoRepository
@@ -42,6 +42,7 @@ class ProfileViewModel(
             totalTasks = prefs.totalTasksCreated,
             tasksDone = tasks.count { it.isCompleted },
             tasksToday = tasks.count { it.createdAt.toLocalDate() == today },
+            focusSessionsToday = prefs.focusSessionsToday,
             currentTheme = prefs.themeMode.name.lowercase().replaceFirstChar { it.uppercase() }
         )
     }.stateIn(

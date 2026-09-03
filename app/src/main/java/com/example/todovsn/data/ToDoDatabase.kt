@@ -8,23 +8,47 @@ import androidx.room3.Room
 import androidx.room3.RoomDatabase
 import androidx.room3.TypeConverter
 import androidx.room3.TypeConverters
+import androidx.room3.migration.Migration
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
 @TypeConverters(DateConverters::class)
-@Database(entities = [ToDoItem::class], version = 6, exportSchema = false)
+@Database(entities = [ToDoItem::class, Category::class], version = 7, exportSchema = true)
 abstract class ToDoDatabase : RoomDatabase() {
     abstract fun toDoDao() : ToDoDao
+    abstract fun categoryDao() : CategoryDao
 
     companion object {
         @Volatile
         private var Instance: ToDoDatabase? = null
 
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("CREATE TABLE IF NOT EXISTS `Categories` (`name` TEXT NOT NULL, PRIMARY KEY(`name`))")
+                // Pre-populate default categories
+                val defaults = listOf("Study", "Work", "Productive", "Personal", "Important")
+                defaults.forEach { name ->
+                    connection.execSQL("INSERT OR IGNORE INTO Categories (name) VALUES ('$name')")
+                }
+            }
+        }
+
         fun getDatabase(context: Context): ToDoDatabase {
             return Instance?: synchronized(this) {
                 Room.databaseBuilder(context, ToDoDatabase::class.java, "todo_database")
-                    .fallbackToDestructiveMigration()
+                    .addCallback(object : Callback() {
+                        override suspend fun onCreate(connection: SQLiteConnection) {
+                            super.onCreate(connection)
+                            val defaults = listOf("Study", "Work", "Productive", "Personal", "Important")
+                            defaults.forEach { name ->
+                                connection.execSQL("INSERT OR IGNORE INTO Categories (name) VALUES ('$name')")
+                            }
+                        }
+                    })
+                    .addMigrations(MIGRATION_6_7)
                     .build()
                     .also { Instance = it }
             }

@@ -1,36 +1,16 @@
 package com.example.todovsn.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,8 +21,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
+import com.example.todovsn.data.Category
 import com.example.todovsn.data.preference.ThemeMode
 import com.example.todovsn.ui.AppViewModelProvider
+import com.example.todovsn.ui.components.EditNameDialog
 import com.example.todovsn.ui.navigation.NavDestination
 
 object SettingsDestination : NavDestination {
@@ -52,6 +34,7 @@ object SettingsDestination : NavDestination {
 
 @Composable
 fun SettingsScreen(
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     settingsViewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
@@ -59,8 +42,10 @@ fun SettingsScreen(
 
     SettingsContent(
         uiState = uiState,
+        onBackClick = onBackClick,
         onNameClick = { settingsViewModel.showNameDialog(true) },
         onThemeClick = { settingsViewModel.showThemeDialog(true) },
+        onCategoryClick = { settingsViewModel.showCategoryManagement(true) },
         onResetClick = { settingsViewModel.showResetConfirmation(true) },
         onDeleteClick = { settingsViewModel.showDeleteConfirmation(true) },
         onReminderToggle = { settingsViewModel.setSmartRemindersEnabled(it) },
@@ -80,6 +65,15 @@ fun SettingsScreen(
             currentTheme = uiState.preferences.themeMode,
             onThemeSelected = settingsViewModel::setThemeMode,
             onDismiss = { settingsViewModel.showThemeDialog(false) }
+        )
+    }
+
+    if (uiState.isCategoryManagementOpen) {
+        CategoryManagementDialog(
+            categories = uiState.categories,
+            onAdd = settingsViewModel::addCategory,
+            onRemove = settingsViewModel::deleteCategory,
+            onDismiss = { settingsViewModel.showCategoryManagement(false) }
         )
     }
 
@@ -106,8 +100,10 @@ fun SettingsScreen(
 @Composable
 private fun SettingsContent(
     uiState: SettingsUiState,
+    onBackClick: () -> Unit,
     onNameClick: () -> Unit,
     onThemeClick: () -> Unit,
+    onCategoryClick: () -> Unit,
     onResetClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onReminderToggle: (Boolean) -> Unit,
@@ -119,7 +115,7 @@ private fun SettingsContent(
 
     Scaffold(
         containerColor = colorScheme.background
-    ) { innerPadding ->
+    ) { innerPadding: PaddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -129,17 +125,38 @@ private fun SettingsContent(
             horizontalAlignment = Alignment.Start
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 32.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            colorScheme.surfaceVariant,
+                            CircleShape
+                        )
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.arrow_back),
+                        contentDescription = "Back",
+                        modifier = Modifier.size(20.dp),
+                        tint = colorScheme.onSurface
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
                 Text(
                     text = "Settings",
-                    style = MaterialTheme.typography.headlineLarge,
+                    style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = colorScheme.onSurface
+                    color = colorScheme.onSurface,
+                    modifier = Modifier.weight(1f)
                 )
-                
+
                 Surface(
                     shape = CircleShape,
                     color = colorScheme.surfaceVariant,
@@ -181,6 +198,12 @@ private fun SettingsContent(
                             ThemeMode.DARK -> "Deep Sea (Dark)"
                         },
                         onClick = onThemeClick
+                    )
+                    SettingsItem(
+                        icon = R.drawable.category,
+                        title = "Categories",
+                        subtitle = "Manage your task categories",
+                        onClick = onCategoryClick
                     )
                 }
             }
@@ -442,6 +465,101 @@ private fun TechTag(name: String) {
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }
+}
+
+@Composable
+private fun CategoryManagementDialog(
+    categories: List<Category>,
+    onAdd: (String) -> Unit,
+    onRemove: (Category) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var newCategoryName by remember { mutableStateOf("") }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Manage Categories") },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Add new category
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = newCategoryName,
+                        onValueChange = { name -> newCategoryName = name },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("New category...") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        onClick = {
+                            if (newCategoryName.isNotBlank()) {
+                                onAdd(newCategoryName)
+                                newCategoryName = ""
+                            }
+                        },
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            .size(40.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.add),
+                            contentDescription = "Add",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                HorizontalDivider()
+
+                // List existing categories
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 300.dp)) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(categories) { category ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = category.name,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+
+                                IconButton(onClick = { onRemove(category) }) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.delete_icon),
+                                        contentDescription = "Delete",
+                                        tint = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Close") }
+        }
+    )
 }
 
 @Composable

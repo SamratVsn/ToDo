@@ -5,34 +5,34 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.todovsn.ui.AppViewModelProvider
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
+import com.example.todovsn.ui.AppViewModelProvider
+import com.example.todovsn.ui.components.SessionCompletedDialog
 import com.example.todovsn.ui.navigation.NavDestination
 
 object FocusDestination : NavDestination {
@@ -40,11 +40,15 @@ object FocusDestination : NavDestination {
     override val titleRes = R.string.focus
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FocusScreen(
     viewModel: FocusViewModel = viewModel(factory = AppViewModelProvider.Factory)
-){
+) {
     val uiState by viewModel.uiState.collectAsState()
+    val haptic = LocalHapticFeedback.current
+    val view = LocalView.current
+    var showCustomTimeSheet by remember { mutableStateOf(false) }
 
     val animatedProgress by animateFloatAsState(
         targetValue = uiState.progress,
@@ -52,10 +56,37 @@ fun FocusScreen(
         label = "TimerProgress"
     )
 
+    // Keep screen on while timer is running
+    DisposableEffect(uiState.isRunning) {
+        view.keepScreenOn = uiState.isRunning
+        onDispose {
+            view.keepScreenOn = false
+        }
+    }
+
+    // Trigger haptic feedback on completion
+    LaunchedEffect(uiState.isSessionCompleted) {
+        if (uiState.isSessionCompleted) {
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        }
+    }
+
     if (uiState.isSessionCompleted) {
         SessionCompletedDialog(
             durationSeconds = uiState.totalTimeSeconds,
+            sessionsCompletedToday = uiState.sessionsCompletedToday,
             onDismiss = { viewModel.dismissCompletionDialog() }
+        )
+    }
+
+    if (showCustomTimeSheet) {
+        CustomTimePickerSheet(
+            currentSeconds = uiState.selectedDuration,
+            onDurationSelect = {
+                viewModel.selectDuration(it)
+                showCustomTimeSheet = false
+            },
+            onDismiss = { showCustomTimeSheet = false }
         )
     }
 
@@ -66,37 +97,39 @@ fun FocusScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp, vertical = 32.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(start = 24.dp, end = 24.dp, top = 8.dp, bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             FocusHeader()
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             FocusTimer(
                 progress = animatedProgress,
                 timeRemaining = uiState.formattedTime
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             DurationSelector(
                 selectedDuration = uiState.selectedDuration,
-                onDurationSelect = { viewModel.selectDuration(it) }
+                onDurationSelect = { viewModel.selectDuration(it) },
+                enabled = !uiState.isRunning
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Text(
                 text = "\"Focus on being productive instead of busy.\"",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
-                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                fontStyle = FontStyle.Italic,
                 modifier = Modifier.padding(horizontal = 32.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             FocusControls(
                 isRunning = uiState.isRunning,
@@ -107,93 +140,22 @@ fun FocusScreen(
                 onStopTimer = { viewModel.resetTimer() }
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            TextButton(onClick = { /* Handle custom time for later */ }) {
-                Text(
-                    text = "EDIT CUSTOM TIME",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    letterSpacing = 1.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun SessionCompletedDialog(
-    durationSeconds: Int,
-    onDismiss: () -> Unit
-) {
-    val minutes = durationSeconds / 60
-    val durationText = if (minutes >= 60) {
-        val hours = minutes / 60
-        val remainingMins = minutes % 60
-        if (remainingMins == 0) "${hours}h" else "${hours}h ${remainingMins}m"
-    } else {
-        "${minutes} minutes"
-    }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+            TextButton(
+                onClick = { showCustomTimeSheet = true },
+                enabled = !uiState.isRunning
             ) {
                 Text(
-                    text = "🎉 Session Complete!",
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    text = stringResource(R.string.select_custom_time).uppercase(),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = if (uiState.isRunning) {
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    letterSpacing = 1.sp
                 )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Highlighted Duration Chip/Pill
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.padding(vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "Duration: $durationText",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Great job staying focused! Take a short break or start a new round.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = onDismiss,
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Continue")
-                }
             }
         }
     }
@@ -217,7 +179,7 @@ private fun FocusTimer(
     timeRemaining: String,
     modifier: Modifier = Modifier
 ) {
-    val strokeWidth = 12.dp
+    val strokeWidth = 20.dp
     val primaryColor = MaterialTheme.colorScheme.primary
     val trackColor = primaryColor.copy(alpha = 0.2f)
 
@@ -225,7 +187,11 @@ private fun FocusTimer(
         modifier = modifier.size(300.dp),
         contentAlignment = Alignment.Center
     ) {
-        Canvas(modifier = Modifier.fillMaxSize()) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(strokeWidth / 2) // Prevent clipping
+        ) {
             drawArc(
                 color = trackColor,
                 startAngle = 0f,
@@ -263,7 +229,8 @@ private fun FocusTimer(
 @Composable
 private fun DurationSelector(
     selectedDuration: Int,
-    onDurationSelect: (Int) -> Unit
+    onDurationSelect: (Int) -> Unit,
+    enabled: Boolean
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -273,13 +240,18 @@ private fun DurationSelector(
             letterSpacing = 2.sp
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             listOf(15, 25, 45, 60).forEach { mins ->
                 val seconds = mins * 60
                 DurationChip(
                     label = "${mins}m",
                     isSelected = selectedDuration == seconds,
-                    onClick = { onDurationSelect(seconds) }
+                    onClick = { onDurationSelect(seconds) },
+                    enabled = enabled
                 )
             }
         }
@@ -302,13 +274,13 @@ private fun FocusControls(
         Button(
             onClick = onToggleTimer,
             modifier = Modifier
-                .height(64.dp)
+                .height(72.dp)
                 .weight(1f)
                 .padding(end = 16.dp),
-            shape = RoundedCornerShape(20.dp),
+            shape = RoundedCornerShape(24.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp)
         ) {
@@ -318,7 +290,9 @@ private fun FocusControls(
                         if (isRunning) R.drawable.pause
                         else R.drawable.play_arrow
                     ),
-                    contentDescription = null,
+                    contentDescription = stringResource(
+                        if (isRunning) R.string.pause_timer else R.string.start_timer
+                    ),
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -334,10 +308,13 @@ private fun FocusControls(
             }
         }
         
+        val stopDescription = stringResource(R.string.stop_timer)
         Surface(
             onClick = onStopTimer,
-            modifier = Modifier.size(64.dp),
-            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier
+                .size(72.dp)
+                .semantics { contentDescription = stopDescription },
+            shape = RoundedCornerShape(24.dp),
             color = MaterialTheme.colorScheme.surfaceVariant,
             tonalElevation = 2.dp
         ) {
@@ -359,27 +336,28 @@ private fun FocusControls(
 private fun DurationChip(
     label: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean
 ) {
-    val containerColor = if (isSelected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+    val containerColor = when {
+        isSelected -> MaterialTheme.colorScheme.primary
+        !enabled -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+        else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
     }
 
-    val contentColor = if (isSelected) {
-        Color.White
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
+    val contentColor = when {
+        isSelected -> MaterialTheme.colorScheme.onPrimary
+        !enabled -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     Surface(
-        onClick = onClick,
+        onClick = if (enabled) onClick else ({}),
         shape = RoundedCornerShape(16.dp),
         color = containerColor,
         modifier = Modifier
-            .width(72.dp)
-            .height(48.dp)
+            .width(80.dp)
+            .height(56.dp)
             .then(
                 if (isSelected) Modifier.shadow(
                     elevation = 12.dp,
@@ -388,7 +366,8 @@ private fun DurationChip(
                     spotColor = MaterialTheme.colorScheme.primary
                 ) else Modifier
             ),
-        shadowElevation = if (isSelected) 8.dp else 0.dp
+        shadowElevation = if (isSelected) 8.dp else 0.dp,
+        enabled = enabled
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(
@@ -397,6 +376,73 @@ private fun DurationChip(
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                 color = contentColor
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CustomTimePickerSheet(
+    currentSeconds: Int,
+    onDurationSelect: (Int) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+    var sliderValue by remember { mutableStateOf((currentSeconds / 60).toFloat()) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 48.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(R.string.select_custom_time),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            Text(
+                text = stringResource(R.string.minutes_format, sliderValue.toInt()),
+                style = MaterialTheme.typography.displayMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Slider(
+                value = sliderValue,
+                onValueChange = { sliderValue = it },
+                valueRange = 1f..120f,
+                steps = 118,
+                modifier = Modifier.fillMaxWidth()
+            )
+            
+            Spacer(modifier = Modifier.height(40.dp))
+            
+            Button(
+                onClick = { onDurationSelect(sliderValue.toInt() * 60) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.set_duration),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }

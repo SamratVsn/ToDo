@@ -1,6 +1,8 @@
 package com.example.todovsn.data.preference
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -11,9 +13,9 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
+import java.time.LocalDate
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "todo_preferences")
 
@@ -26,20 +28,32 @@ class PreferenceRepository(private val context: Context) {
                 throw exception
             }
         }
-        .map{ prefs ->
+        .map { prefs ->
             val name = prefs[Keys.DISPLAY_NAME] ?: "Guest"
             val theme = prefs[Keys.THEME_MODE]?.let {
                 runCatching { ThemeMode.valueOf(it) }.getOrDefault(ThemeMode.SYSTEM)
             } ?: ThemeMode.SYSTEM
             val totalCreated = prefs[Keys.TOTAL_TASKS_CREATED] ?: 0
             val smartReminders = prefs[Keys.SMART_REMINDERS_ENABLED] ?: false
+            
+            val lastDate = prefs[Keys.LAST_FOCUS_DATE] ?: ""
+            val today = LocalDate.now().toString()
+            
+            val sessionsToday = if (lastDate == today) {
+                prefs[Keys.FOCUS_SESSIONS_TODAY] ?: 0
+            } else {
+                0
+            }
+
             UserPreferences(
-                themeMode = theme, 
-                displayName = name, 
+                themeMode = theme,
+                displayName = name,
                 totalTasksCreated = totalCreated,
-                smartRemindersEnabled = smartReminders
+                smartRemindersEnabled = smartReminders,
+                focusSessionsToday = sessionsToday,
+                lastFocusDate = lastDate
             )
-    }
+        }
 
     suspend fun setThemeMode(mode: ThemeMode) {
         context.dataStore.edit { it[Keys.THEME_MODE] = mode.name }
@@ -60,6 +74,20 @@ class PreferenceRepository(private val context: Context) {
         }
     }
 
+    suspend fun incrementFocusSessions() {
+        val today = LocalDate.now().toString()
+        context.dataStore.edit { prefs ->
+            val lastDate = prefs[Keys.LAST_FOCUS_DATE] ?: ""
+            val current = if (lastDate == today) {
+                prefs[Keys.FOCUS_SESSIONS_TODAY] ?: 0
+            } else {
+                0
+            }
+            prefs[Keys.FOCUS_SESSIONS_TODAY] = current + 1
+            prefs[Keys.LAST_FOCUS_DATE] = today
+        }
+    }
+
     suspend fun resetTotalTasksCreated() {
         context.dataStore.edit { it[Keys.TOTAL_TASKS_CREATED] = 0 }
     }
@@ -73,5 +101,7 @@ class PreferenceRepository(private val context: Context) {
         val DISPLAY_NAME = stringPreferencesKey("display_name")
         val TOTAL_TASKS_CREATED = intPreferencesKey("total_tasks_created")
         val SMART_REMINDERS_ENABLED = booleanPreferencesKey("smart_reminders_enabled")
+        val FOCUS_SESSIONS_TODAY = intPreferencesKey("focus_sessions_today")
+        val LAST_FOCUS_DATE = stringPreferencesKey("last_focus_date")
     }
 }

@@ -12,4 +12,8 @@ interface ToDoRepository {
     suspend fun updateToDo(item: ToDoItem)
 
     suspend fun deleteAllToDo()
+
+    fun getAllCategoriesStream(): Flow<List<Category>>
+    suspend fun insertCategory(category: Category)
+    suspend fun deleteCategory(category: Category)
 }

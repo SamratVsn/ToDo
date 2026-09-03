@@ -7,8 +7,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todovsn.data.ToDoRepository
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class EditViewModel(
@@ -17,6 +21,14 @@ class EditViewModel(
 ) : ViewModel() {
     var toDoUiState by mutableStateOf(ToDoUiState())
         private set
+
+    val categories: StateFlow<List<String>> = toDoRepository.getAllCategoriesStream()
+        .map { it.map { category -> category.name } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = listOf("Study", "Work", "Productive", "Personal", "Important")
+        )
 
     private val toDoId: Int = checkNotNull(savedStateHandle[ToDoEditDestination.toDoIdArg])
 

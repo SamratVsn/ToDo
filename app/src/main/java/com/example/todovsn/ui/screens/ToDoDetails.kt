@@ -63,7 +63,6 @@ object ToDoDetailsDestination : NavDestination {
     val routeWithArgs = "$route/{$toDoIdArg}"
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToDoDetailsScreen(
@@ -92,12 +91,10 @@ fun ToDoDetailsScreen(
             onBackClick = navigateBack,
             modifier = Modifier
                 .padding(innerPadding)
-                .statusBarsPadding()
         )
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun ToDoDetailsBody(
     toDoDetailsUiState: ToDoDetailsUiState,

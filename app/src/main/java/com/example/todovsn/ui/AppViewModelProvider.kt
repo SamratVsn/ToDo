@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.todovsn.ToDoApplication
 import com.example.todovsn.ui.home.HomeViewModel
 import com.example.todovsn.ui.screens.AddViewModel
+import com.example.todovsn.ui.screens.CategoryViewModel
 import com.example.todovsn.ui.screens.DetailsViewModel
 import com.example.todovsn.ui.screens.EditViewModel
 import com.example.todovsn.ui.screens.FocusViewModel
@@ -32,7 +33,15 @@ object AppViewModelProvider {
         }
 
         initializer {
-            FocusViewModel()
+            CategoryViewModel(
+                toDoApplication().container.toDoRepository
+            )
+        }
+
+        initializer {
+            FocusViewModel(
+                toDoApplication().container.userPreferencesRepository
+            )
         }
 
         initializer {

@@ -1,12 +1,18 @@
 package com.example.todovsn.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.todovsn.data.preference.PreferenceRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -17,7 +23,8 @@ data class FocusUiState(
     val timeLeftSeconds: Int = 1500,
     val isRunning: Boolean = false,
     val selectedDuration: Int = 1500,
-    val isSessionCompleted: Boolean = false //to track down session completion details
+    val isSessionCompleted: Boolean = false,
+    val sessionsCompletedToday: Int = 0
 ) {
     val formattedTime: String
         get() {
@@ -32,49 +39,78 @@ data class FocusUiState(
         } else 0f
 }
 
-class FocusViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(FocusUiState())
-    val uiState: StateFlow<FocusUiState> = _uiState.asStateFlow()
+class FocusViewModel(
+    private val preferenceRepository: PreferenceRepository
+) : ViewModel() {
+    private val _timerState = MutableStateFlow(
+        TimerState(
+            totalTimeSeconds = 1500,
+            timeLeftSeconds = 1500,
+            isRunning = false,
+            selectedDuration = 1500,
+            isSessionCompleted = false
+        )
+    )
+
+    val uiState: StateFlow<FocusUiState> = combine(
+        _timerState,
+        preferenceRepository.preferences
+    ) { timer, prefs ->
+        FocusUiState(
+            totalTimeSeconds = timer.totalTimeSeconds,
+            timeLeftSeconds = timer.timeLeftSeconds,
+            isRunning = timer.isRunning,
+            selectedDuration = timer.selectedDuration,
+            isSessionCompleted = timer.isSessionCompleted,
+            sessionsCompletedToday = prefs.focusSessionsToday
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = FocusUiState()
+    )
 
     private var timerJob: Job? = null
 
     fun startTimer() {
-        if (_uiState.value.isRunning || _uiState.value.timeLeftSeconds <= 0) return
+        if (_timerState.value.isRunning || _timerState.value.timeLeftSeconds <= 0) return
 
-        _uiState.update { it.copy(isRunning = true) }
+        _timerState.update { it.copy(isRunning = true, isSessionCompleted = false) }
 
         timerJob = viewModelScope.launch {
-            while (isActive && _uiState.value.timeLeftSeconds > 0) {
+            while (isActive && _timerState.value.timeLeftSeconds > 0) {
                 delay(1000L.milliseconds)
-                _uiState.update { state ->
+                _timerState.update { state ->
                     state.copy(timeLeftSeconds = state.timeLeftSeconds - 1)
                 }
             }
 
-            if (_uiState.value.timeLeftSeconds == 0) {
-                _uiState.update { it.copy(isRunning = false) }
+            if (_timerState.value.timeLeftSeconds == 0) {
+                _timerState.update { it.copy(isRunning = false, isSessionCompleted = true) }
+                preferenceRepository.incrementFocusSessions()
             }
         }
     }
 
     fun pauseTimer() {
         timerJob?.cancel()
-        _uiState.update { it.copy(isRunning = false) }
+        _timerState.update { it.copy(isRunning = false) }
     }
 
     fun resetTimer() {
         timerJob?.cancel()
-        _uiState.update {
+        _timerState.update {
             it.copy(
                 timeLeftSeconds = it.selectedDuration,
-                isRunning = false
+                isRunning = false,
+                isSessionCompleted = false
             )
         }
     }
 
     fun selectDuration(seconds: Int) {
         pauseTimer()
-        _uiState.update {
+        _timerState.update {
             it.copy(
                 selectedDuration = seconds,
                 totalTimeSeconds = seconds,
@@ -89,6 +125,19 @@ class FocusViewModel : ViewModel() {
     }
 
     fun dismissCompletionDialog() {
-        _uiState.update { it.copy(isSessionCompleted = false) }
+        _timerState.update {
+            it.copy(
+                isSessionCompleted = false,
+                timeLeftSeconds = it.selectedDuration
+            )
+        }
     }
 }
+
+private data class TimerState(
+    val totalTimeSeconds: Int,
+    val timeLeftSeconds: Int,
+    val isRunning: Boolean,
+    val selectedDuration: Int,
+    val isSessionCompleted: Boolean
+)

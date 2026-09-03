@@ -18,4 +18,11 @@
     <string name="mark_complete">Task is Completed</string>
     <string name="edit_task">Edit Task</string>
     <string name="profile">Profile</string>
+    <string name="pause_timer">Pause timer</string>
+    <string name="start_timer">Start timer</string>
+    <string name="resume_timer">Resume timer</string>
+    <string name="stop_timer">Stop and reset timer</string>
+    <string name="select_custom_time">Select Custom Time</string>
+    <string name="set_duration">Set Duration</string>
+    <string name="minutes_format">%1$d minutes</string>
 </resources>

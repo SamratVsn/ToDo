@@ -13,10 +13,12 @@ import com.example.todovsn.ui.screens.AddToDoDestination
 import com.example.todovsn.ui.screens.AddToDoScreen
 import com.example.todovsn.ui.screens.FocusDestination
 import com.example.todovsn.ui.screens.FocusScreen
-import com.example.todovsn.ui.screens.SettingsDestination
-import com.example.todovsn.ui.screens.SettingsScreen
+import com.example.todovsn.ui.screens.CategoryDestination
+import com.example.todovsn.ui.screens.CategoryScreen
 import com.example.todovsn.ui.screens.ProfileDestination
 import com.example.todovsn.ui.screens.ProfileScreen
+import com.example.todovsn.ui.screens.SettingsDestination
+import com.example.todovsn.ui.screens.SettingsScreen
 import com.example.todovsn.ui.screens.ToDoDetailsDestination
 import com.example.todovsn.ui.screens.ToDoDetailsScreen
 import com.example.todovsn.ui.screens.ToDoEditDestination
@@ -37,6 +39,14 @@ fun ToDoNavHost(
                 navigateToTaskEntry = {
                     navController.navigate(AddToDoDestination.route)
                 },
+                navigateToTaskUpdate = {
+                    navController.navigate("${ToDoDetailsDestination.route}/${it}")
+                }
+            )
+        }
+
+        composable(route = CategoryDestination.route) {
+            CategoryScreen(
                 navigateToTaskUpdate = {
                     navController.navigate("${ToDoDetailsDestination.route}/${it}")
                 }
@@ -81,7 +91,11 @@ fun ToDoNavHost(
         }
 
         composable(route = SettingsDestination.route) {
-            SettingsScreen()
+            SettingsScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         composable(route = FocusDestination.route) {
@@ -89,7 +103,11 @@ fun ToDoNavHost(
         }
 
         composable(route = ProfileDestination.route) {
-            ProfileScreen()
+            ProfileScreen(
+                navigateToSettings = {
+                    navController.navigate(SettingsDestination.route)
+                }
+            )
         }
     }
 }

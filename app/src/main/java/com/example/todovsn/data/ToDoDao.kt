@@ -22,7 +22,7 @@ interface ToDoDao {
     @Query("SELECT * from Tasks WHERE id = :id")
     fun getToDo(id: Int): Flow<ToDoItem?>
 
-    @Query("SELECT * from Tasks ORDER BY title ASC")
+    @Query("SELECT * from Tasks ORDER BY isCompleted ASC, createdAt DESC")
     fun getAllToDos(): Flow<List<ToDoItem>>
 
     @Query("DELETE FROM Tasks")

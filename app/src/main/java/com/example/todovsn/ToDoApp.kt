@@ -46,7 +46,7 @@ val DeepSeaNavBar = Color(0xFF232A54)
 sealed class BottomNavItem(val route: String, val icon: Int, val label: String) {
     object Home : BottomNavItem("home", R.drawable.notes, "Tasks")
     object Focus: BottomNavItem("focus", R.drawable.focus, "Focus")
-    object Settings : BottomNavItem("settings", R.drawable.settings, "Settings")
+    object Category : BottomNavItem("category", R.drawable.category, "Category")
     object Profile : BottomNavItem("profile", R.drawable.profile, "Profile")
 }
 
@@ -60,11 +60,12 @@ fun ToDoApp(
     val showBottomBar = currentRoute in listOf(
         BottomNavItem.Home.route,
         BottomNavItem.Focus.route,
-        BottomNavItem.Settings.route,
+        BottomNavItem.Category.route,
         BottomNavItem.Profile.route
     )
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (showBottomBar) {
                 Box(
@@ -83,7 +84,7 @@ fun ToDoApp(
                         contentColor = Color.White,
                         elevation = FloatingActionButtonDefaults.elevation(8.dp),
                         modifier = Modifier
-                            .offset(y = (-44).dp) // Adjusted to sit perfectly above the bar
+                            .offset(y = (-56).dp) // Better positioned above the bar
                             .size(64.dp)
                     ) {
                         Icon(
@@ -98,7 +99,7 @@ fun ToDoApp(
     ) { innerPadding ->
         ToDoNavHost(
             navController = navController,
-            modifier = Modifier.padding(bottom = if (showBottomBar) innerPadding.calculateBottomPadding() else 0.dp)
+            modifier = Modifier.padding(innerPadding)
         )
     }
 }
@@ -111,7 +112,7 @@ fun ToDoBottomNavigation(
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Focus,
-        BottomNavItem.Settings,
+        BottomNavItem.Category,
         BottomNavItem.Profile
     )
 

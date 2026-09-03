@@ -24,6 +24,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +37,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,6 +60,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.todovsn.R
 import com.example.todovsn.ui.AppViewModelProvider
+import com.example.todovsn.ui.components.EditNameDialog
 import com.example.todovsn.ui.navigation.NavDestination
 
 object ProfileDestination : NavDestination {
@@ -79,10 +84,10 @@ private val motivationalBios = listOf(
     "Building better days, one checklist at a time.",
 )
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    navigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
@@ -135,7 +140,8 @@ fun ProfileScreen(
                 StatsCardsSection(
                     total = uiState.totalTasks,
                     done = uiState.tasksDone,
-                    today = uiState.tasksToday
+                    today = uiState.tasksToday,
+                    focusSessions = uiState.focusSessionsToday
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -143,6 +149,39 @@ fun ProfileScreen(
                 PersonalDetailsCard(
                     currentTheme = uiState.currentTheme
                 )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = navigateToSettings,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.settings),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "App Settings",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(100.dp))
             }
@@ -206,32 +245,46 @@ private fun ProfileBanner(bannerColors: List<Color>) {
 }
 
 @Composable
-private fun StatsCardsSection(total: Int, done: Int, today: Int) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        StatCard(
-            modifier = Modifier.weight(1f),
-            label = "Total Tasks",
-            value = total.toString(),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
-        StatCard(
-            modifier = Modifier.weight(1f),
-            label = "Completed",
-            value = done.toString(),
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-        )
-        StatCard(
-            modifier = Modifier.weight(1f),
-            label = "Today",
-            value = today.toString(),
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-        )
+private fun StatsCardsSection(total: Int, done: Int, today: Int, focusSessions: Int) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            StatCard(
+                modifier = Modifier.weight(1f),
+                label = "Total Tasks",
+                value = total.toString(),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+            StatCard(
+                modifier = Modifier.weight(1f),
+                label = "Completed",
+                value = done.toString(),
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            StatCard(
+                modifier = Modifier.weight(1f),
+                label = "Today",
+                value = today.toString(),
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+            )
+            StatCard(
+                modifier = Modifier.weight(1f),
+                label = "Focus Sessions",
+                value = focusSessions.toString(),
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.primary
+            )
+        }
     }
 }
 
@@ -340,38 +393,6 @@ private fun HorizontalDivider(modifier: Modifier = Modifier) {
             .fillMaxWidth()
             .height(1.dp)
             .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-    )
-}
-
-@Composable
-fun EditNameDialog(
-    initialName: String,
-    onConfirm: (String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var nameInput by remember { mutableStateOf(if (initialName == "Guest") "" else initialName) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Edit display name") },
-        text = {
-            OutlinedTextField(
-                value = nameInput,
-                onValueChange = { nameInput = it },
-                label = { Text("Display name") },
-                placeholder = { Text("Guest") },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .imePadding()
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = { onConfirm(nameInput) }) { Text("Save") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancel") }
-        }
     )
 }
 
