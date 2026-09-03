@@ -16,7 +16,8 @@ data class FocusUiState(
     val totalTimeSeconds: Int = 1500, //25 minutes
     val timeLeftSeconds: Int = 1500,
     val isRunning: Boolean = false,
-    val selectedDuration: Int = 1500
+    val selectedDuration: Int = 1500,
+    val isSessionCompleted: Boolean = false //to track down session completion details
 ) {
     val formattedTime: String
         get() {
@@ -85,5 +86,9 @@ class FocusViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         timerJob?.cancel()
+    }
+
+    fun dismissCompletionDialog() {
+        _uiState.update { it.copy(isSessionCompleted = false) }
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 
 import com.example.todovsn.R
 import com.example.todovsn.ui.navigation.NavDestination
@@ -50,6 +51,13 @@ fun FocusScreen(
         animationSpec = tween(durationMillis = 1000, easing = LinearEasing),
         label = "TimerProgress"
     )
+
+    if (uiState.isSessionCompleted) {
+        SessionCompletedDialog(
+            durationSeconds = uiState.totalTimeSeconds,
+            onDismiss = { viewModel.dismissCompletionDialog() }
+        )
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background
@@ -108,6 +116,84 @@ fun FocusScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 1.sp
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun SessionCompletedDialog(
+    durationSeconds: Int,
+    onDismiss: () -> Unit
+) {
+    val minutes = durationSeconds / 60
+    val durationText = if (minutes >= 60) {
+        val hours = minutes / 60
+        val remainingMins = minutes % 60
+        if (remainingMins == 0) "${hours}h" else "${hours}h ${remainingMins}m"
+    } else {
+        "${minutes} minutes"
+    }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "🎉 Session Complete!",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Highlighted Duration Chip/Pill
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.padding(vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Duration: $durationText",
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Great job staying focused! Take a short break or start a new round.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Continue")
+                }
             }
         }
     }
