@@ -6,9 +6,9 @@ Tasks is a sleek, modern, and productivity-focused task management application b
 
 ## Screenshots
 
-| Home | Focus | Profile | Settings | Add Task | Task Details |
+| Home | Focus | Pr<br/>ofile | Settings | Add Task | Task Details |
 |------|-------|---------|----------|----------|----------|
-| ![](Home.png) | ![](Empty.png) | ![](Info.png) | ![](Edit.png) | ![](Add.png) | ![](Home.png) |
+| ![](Screenshots/Home.png) | ![](Screenshots/Focus.png) | ![](Screenshots/Profile.png) | ![](Screenshots/Settings.png) | ![](Screenshots/Add.png) | ![](Screenshots/Details.png) |
 
 ---
 
