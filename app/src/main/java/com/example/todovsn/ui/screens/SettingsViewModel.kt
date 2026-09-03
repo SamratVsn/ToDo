@@ -86,7 +86,7 @@ class SettingsViewModel(
 
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
-            toDoRepository.deleteCategory(category)
+            toDoRepository.deleteCategoryAndMoveTasks(category)
         }
     }
 

@@ -41,9 +41,12 @@ class EditViewModel(
         }
     }
 
-    suspend fun updateToDo(){
-        if(validateInput(toDoUiState.toDoDetails)){
+    suspend fun updateToDo(): Boolean {
+        return if (validateInput(toDoUiState.toDoDetails)) {
             toDoRepository.updateToDo(toDoUiState.toDoDetails.toToDo())
+            true
+        } else {
+            false
         }
     }
 

@@ -253,7 +253,7 @@ private fun StatsCardsSection(total: Int, done: Int, today: Int, focusSessions: 
         ) {
             StatCard(
                 modifier = Modifier.weight(1f),
-                label = "Total Tasks",
+                label = "Created (All-Time)",
                 value = total.toString(),
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer

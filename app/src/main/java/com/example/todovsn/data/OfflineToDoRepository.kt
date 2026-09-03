@@ -23,4 +23,9 @@ class OfflineToDoRepository(
     override suspend fun insertCategory(category: Category) = categoryDao.insert(category)
 
     override suspend fun deleteCategory(category: Category) = categoryDao.delete(category)
+
+    override suspend fun deleteCategoryAndMoveTasks(category: Category) {
+        toDoDao.updateTasksCategory(category.name)
+        categoryDao.delete(category)
+    }
 }

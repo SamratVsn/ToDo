@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 data class CategoryUiState(
     val tasks: List<ToDoItem> = listOf(),
-    val categories: List<String> = listOf("All", "Study", "Work", "Productive", "Personal", "Important"),
+    val categories: List<String> = listOf("All"),
     val selectedCategory: String = "All",
     val searchQuery: String = ""
 )

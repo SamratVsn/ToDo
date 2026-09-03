@@ -75,6 +75,10 @@ fun FocusScreen(
         SessionCompletedDialog(
             durationSeconds = uiState.totalTimeSeconds,
             sessionsCompletedToday = uiState.sessionsCompletedToday,
+            onStartNewSession = {
+                viewModel.dismissCompletionDialog()
+                viewModel.startTimer()
+            },
             onDismiss = { viewModel.dismissCompletionDialog() }
         )
     }

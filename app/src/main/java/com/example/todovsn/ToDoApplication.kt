@@ -13,11 +13,5 @@ class ToDoApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         container = AppDataContainer(this)
-        MainScope().launch {
-            val defaults = listOf("Study", "Work", "Productive", "Personal", "Important")
-            defaults.forEach { name ->
-                container.toDoRepository.insertCategory(Category(name))
-            }
-        }
     }
 }

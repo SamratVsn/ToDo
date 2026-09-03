@@ -42,8 +42,9 @@ fun ToDoEditScreen(
             onToDoValueChange = viewModel::updateUiState,
             onSaveClick = {
                 coroutineScope.launch {
-                    viewModel.updateToDo()
-                    navigateBack()
+                    if (viewModel.updateToDo()) {
+                        navigateBack()
+                    }
                 }
             },
             onBackClick = navigateBack,

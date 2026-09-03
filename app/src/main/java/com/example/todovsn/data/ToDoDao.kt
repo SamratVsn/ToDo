@@ -27,4 +27,7 @@ interface ToDoDao {
 
     @Query("DELETE FROM Tasks")
     suspend fun deleteAll()
+
+    @Query("UPDATE Tasks SET category = :newCategory WHERE category = :oldCategory")
+    suspend fun updateTasksCategory(oldCategory: String, newCategory: String = "Personal")
 }
