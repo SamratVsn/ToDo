@@ -1,7 +1,5 @@
 package com.example.todovsn.ui.screens
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todovsn.data.preference.PreferenceRepository
@@ -16,7 +14,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
 
 data class FocusUiState(
     val totalTimeSeconds: Int = 1500, //25 minutes
@@ -79,7 +76,7 @@ class FocusViewModel(
 
         timerJob = viewModelScope.launch {
             while (isActive && _timerState.value.timeLeftSeconds > 0) {
-                delay(1000L.milliseconds)
+                delay(1000L)
                 _timerState.update { state ->
                     state.copy(timeLeftSeconds = state.timeLeftSeconds - 1)
                 }

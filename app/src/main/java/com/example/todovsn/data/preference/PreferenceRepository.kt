@@ -1,8 +1,6 @@
 package com.example.todovsn.data.preference
 
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -12,7 +10,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import java.time.LocalDate
@@ -20,14 +19,17 @@ import java.time.LocalDate
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "todo_preferences")
 
 class PreferenceRepository(private val context: Context) {
-    val preferences: Flow<UserPreferences> = context.dataStore.data
-        .catch { exception ->
-            if (exception is IOException) {
-                emit(emptyPreferences())
-            } else {
-                throw exception
-            }
+    // IOException (e.g. corrupt prefs file) -> fall back to defaults.
+    // Other exceptions propagate. Equivalent to the documented
+    // dataStore.data.catch { } pattern, but avoids the deprecated
+    // SharedFlow.catch overload resolution warning.
+    val preferences: Flow<UserPreferences> = flow {
+        try {
+            emitAll(context.dataStore.data)
+        } catch (exception: IOException) {
+            emit(emptyPreferences())
         }
+    }
         .map { prefs ->
             val name = prefs[Keys.DISPLAY_NAME] ?: "Guest"
             val theme = prefs[Keys.THEME_MODE]?.let {
@@ -39,11 +41,11 @@ class PreferenceRepository(private val context: Context) {
             val lastDate = prefs[Keys.LAST_FOCUS_DATE] ?: ""
             val today = LocalDate.now().toString()
             
-            val sessionsToday = if (lastDate == today) {
-                prefs[Keys.FOCUS_SESSIONS_TODAY] ?: 0
-            } else {
-                0
-            }
+            val sessionsToday = resolveSessionsToday(
+                lastDate = lastDate,
+                storedCount = prefs[Keys.FOCUS_SESSIONS_TODAY] ?: 0,
+                today = today
+            )
 
             UserPreferences(
                 themeMode = theme,
@@ -60,7 +62,7 @@ class PreferenceRepository(private val context: Context) {
     }
 
     suspend fun setDisplayName(name: String) {
-        context.dataStore.edit { it[Keys.DISPLAY_NAME] = name.trim().ifBlank { "Guest" } }
+        context.dataStore.edit { it[Keys.DISPLAY_NAME] = normalizeDisplayName(name) }
     }
 
     suspend fun setSmartRemindersEnabled(enabled: Boolean) {

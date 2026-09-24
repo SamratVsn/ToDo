@@ -31,13 +31,8 @@ class CategoryViewModel(private val toDoRepository: ToDoRepository) : ViewModel(
         _searchQuery
     ) { tasks, dbCategories, selected, query ->
         val allCategories = listOf("All") + dbCategories.map { it.name }
-        
-        val filteredTasks = tasks.filter { task ->
-            val matchesQuery = task.title.contains(query, ignoreCase = true) ||
-                    task.description.contains(query, ignoreCase = true)
-            val matchesCategory = if (selected == "All") true else task.category == selected
-            matchesQuery && matchesCategory
-        }
+
+        val filteredTasks = filterCategoryTasks(tasks, query, selected)
 
         CategoryUiState(
             tasks = filteredTasks,
@@ -57,5 +52,19 @@ class CategoryViewModel(private val toDoRepository: ToDoRepository) : ViewModel(
 
     fun selectCategory(category: String) {
         _selectedCategory.value = category
+    }
+}
+
+/** Pure filtering logic, extracted for unit testing. */
+fun filterCategoryTasks(
+    tasks: List<ToDoItem>,
+    query: String,
+    selected: String
+): List<ToDoItem> {
+    return tasks.filter { task ->
+        val matchesQuery = task.title.contains(query, ignoreCase = true) ||
+                task.description.contains(query, ignoreCase = true)
+        val matchesCategory = if (selected == "All") true else task.category == selected
+        matchesQuery && matchesCategory
     }
 }

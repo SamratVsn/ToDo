@@ -78,9 +78,10 @@ class SettingsViewModel(
     }
 
     fun addCategory(name: String) {
-        if (name.isBlank()) return
+        val trimmed = name.trim()
+        if (trimmed.isBlank()) return
         viewModelScope.launch {
-            toDoRepository.insertCategory(Category(name))
+            toDoRepository.insertCategory(Category(trimmed))
         }
     }
 

@@ -33,12 +33,15 @@ class HomeViewModel(private val toDoRepository: ToDoRepository): ViewModel() {
     }
 
     fun restoreDeletedToDo() {
-        lastDeletedToDo?.let { toDo ->
-            viewModelScope.launch {
-                toDoRepository.insertToDo(toDo)
+        val toDo = lastDeletedToDo ?: return
+        viewModelScope.launch {
+            toDoRepository.insertToDo(toDo)
+            // Clear only after a successful restore so a failed insert
+            // doesn't lose the undo buffer.
+            if (lastDeletedToDo == toDo) {
+                lastDeletedToDo = null
             }
         }
-        lastDeletedToDo = null
     }
 
     fun toggleCompleted(toDo: ToDoItem) {

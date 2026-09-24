@@ -37,15 +37,23 @@ class AddViewModel(
     suspend fun saveToDo() : Boolean{
         if (!validateInput()) return false
 
-        toDoRepository.insertToDo(toDoUiState.toDoDetails.toToDo())
+        // Stamp creation time at save, not at form creation, so lingering on
+        // the form doesn't backdate the task.
+        val toDo = toDoUiState.toDoDetails.copy(createdAt = LocalDateTime.now()).toToDo()
+        toDoRepository.insertToDo(toDo)
         preferenceRepository.incrementTotalTasksCreated()
         return true
     }
 
     private fun validateInput(uiState: ToDoDetails = toDoUiState.toDoDetails) : Boolean {
-        return with(uiState) {
-            title.isNotBlank() && title.trim().length >= 3
-        }
+        return isValidToDoEntry(uiState)
+    }
+}
+
+/** Pure validation rule, extracted for unit testing. */
+fun isValidToDoEntry(details: ToDoDetails): Boolean {
+    return with(details) {
+        title.isNotBlank() && title.trim().length >= 3
     }
 }
 

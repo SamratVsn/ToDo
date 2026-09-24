@@ -66,7 +66,7 @@ class DateConverters {
     @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun toLocalDate(value: String?): LocalDate? {
-        return value?.let { LocalDate.parse(it) }
+        return value?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
     }
 
     @TypeConverter
@@ -77,7 +77,7 @@ class DateConverters {
     @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun toLocalTime(value: String?): LocalTime? {
-        return value?.let { LocalTime.parse(it) }
+        return value?.let { runCatching { LocalTime.parse(it) }.getOrNull() }
     }
 
     @TypeConverter
@@ -88,6 +88,6 @@ class DateConverters {
     @RequiresApi(Build.VERSION_CODES.O)
     @TypeConverter
     fun toLocalDateTime(value: String?): LocalDateTime? {
-        return value?.let { LocalDateTime.parse(it) }
+        return value?.let { runCatching { LocalDateTime.parse(it) }.getOrNull() }
     }
 }

@@ -2,8 +2,6 @@ package com.example.todovsn.ui.screens
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.example.todovsn.data.ToDoRepository
 import com.example.todovsn.data.preference.PreferenceRepository
 import kotlinx.coroutines.flow.MutableStateFlow
